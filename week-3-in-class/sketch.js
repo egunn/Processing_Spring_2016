@@ -166,3 +166,4 @@ var Particle = function(position,velocity,hue) {
         return this.lifeSpan <= 0;
         
     }
+}
