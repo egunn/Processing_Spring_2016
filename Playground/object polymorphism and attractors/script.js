@@ -25,12 +25,18 @@ function GeneralParticle(){
     //create object functionality
     this.draw = function(){
         noStroke();
-        fill(fillColor);
+        fill(this.fillColor);
         ellipse(this.pos.x, this.pos.y, size, size);        
     }
     
     this.update = function(){
+        
+        if (this.partType){
+            this.vel = this.vel.rotate(PI/20);
+            this.vel.mult(1.007);
+        }
         this.pos.add(this.vel);
+        
     }
 }
 
@@ -43,7 +49,16 @@ function FastParticle() {
     GeneralParticle.apply(this,arguments);
     
     //multiply the particle speed by 10
-    this.vel = this.vel.mult(10);
+    //this.vel = this.vel.mult(1.5);
+    
+    fastVel = createVector(0,20);
+    this.vel = fastVel.rotate(random(0,TWO_PI));
+    
+    this.fillColor = "red";
+    
+    this.partType = "fast";
+    //accel = createVector(0.01,0);
+    //this.accel = accel;
 }   
 
 /**********************************************************/
@@ -67,9 +82,14 @@ function setup() {
     
     //set up the inheritance relationship (has to be done in the setup function - otherwise, breaks random, createVector, etc.)
     FastParticle.prototype = new GeneralParticle();
+     
+    //add FastParticles to the array
+    for(i=0;i<10;i++){
+        var newParticle = new FastParticle();
+        particleArray.push(newParticle);
+    }
     
-    //create a new fast particle (global)
-    f = new FastParticle();
+    //f = new FastParticle();
 }
 
 
@@ -85,8 +105,4 @@ function draw() {
         p.update();
     }
     
-    //draw and update the fast particle
-    f.draw();
-    f.update();
-
 }
