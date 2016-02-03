@@ -2,6 +2,10 @@
 var particleSystem = []; 
 var attractors = [];
 
+//*******************************************************
+//Setup canvas 
+//*******************************************************
+
 //runs once, at page load.
 function setup() {
     //store window width and height for sizing the canvas later
@@ -19,26 +23,39 @@ function setup() {
     //hue(0-360) saturation(0-100) brightness transparency
     colorMode(HSB,360,100,100,1);
     
-    //create set of 10 attractors
-    for (var i=0; i<10; i++){
+    //create set of 10 GeneralAttractors
+    for (var i=0; i<30; i++){
         var at = new GeneralAttractor(createVector(canvasWidth*Math.random(),canvasHeight*Math.random()),5);
         //straight line down center of window
         //var at = new GeneralAttractor(createVector(canvasWidth/2,(i+1)*canvasHeight/11),5);
     attractors.push(at);
     }
 
-    var test = new AttractorA(createVector(canvasWidth/2,canvasHeight/2),25);
+    //add a few copies of an AttractorA 
+    for (var i=0; i<3; i++){
+var attA = new AttractorA(createVector(canvasWidth*Math.random(),canvasHeight*Math.random()),5);
     
-    attractors.push(test);
+    attractors.push(attA);
+    }
+    
 }
 
+//function to resize window every time window size is changed manually
+function windowResized() {
+    resizeCanvas(canvasWidth, canvasHeight);
+    canvasWidth = windowWidth-100;
+    canvasHeight = windowHeight-120;
+    background(0);
+}
 
-//---------------------------------------------------------
+//*******************************************************
+//Draw canvas 
+//*******************************************************
 
 //runs 30x/second, as set by frame rate
 function draw() {
     //re-draw background each cycle
-    background(0,0,0,0.02);
+    background(0,0,0,0.2);
    // blendMode(EXCLUSION);
     
     //go through the particle system and check if any particles are dead (start from the end, otherwise cutting components out of the array will cause problems)
@@ -51,11 +68,11 @@ function draw() {
             //if it's dead, cut out the array element at index 1, and one element long
             particleSystem.splice(i,1);
 
-            /*
+            
             //if there are fewer than 1000 particles in the system, and all of the particles are outside of the screen, make a new particle system at the position where the last particle died
-            if (particleSystem.length < 1000  && p.getPos().x < canvasWidth && p.getPos().x > 0 && p.getPos().y > 0 && p.getPos().y < height){
+            if (particleSystem.length < 100  && p.getPos().x < canvasWidth && p.getPos().x > 0 && p.getPos().y > 0 && p.getPos().y < height){
                 createMightyParticles(p.getPos());
-            }*/
+            }
         }
         //if it's not dead yet, then draw it and update for the next cycle
         else{
@@ -78,7 +95,6 @@ function draw() {
 
 }
 
-//---------------------------------------------------------
 
 function mouseClicked() {
     //create a new system of particles each time the mouse is clicked.
@@ -86,6 +102,11 @@ function mouseClicked() {
         createMightyParticles();
     }
 }
+
+
+//*******************************************************
+//Create Particle System
+//*******************************************************
 
 //this function works with or without arguments (use no argument in general, use argument for auto-regenerate)
 function createMightyParticles(initialPos) {
@@ -132,14 +153,10 @@ function createMightyParticles(initialPos) {
     }
 }
 
-//function to resize window every time window size is changed manually
-function windowResized() {
-    resizeCanvas(canvasWidth, canvasHeight);
-    canvasWidth = windowWidth-100;
-    canvasHeight = windowHeight-120;
-    background(0);
-}
 
+//*******************************************************
+//Create Particle Prototype
+//*******************************************************
 
 //use uppercase to describe an object
 var Particle = function(pp,vv,hue) {
@@ -161,7 +178,7 @@ var Particle = function(pp,vv,hue) {
     //give the particle a random size and a lifespan
     var pSize = random(3,10);
     //store initial lifespan
-    var initialLifeSpan = random(20,100);
+    var initialLifeSpan = random(80,200);
     this.lifeSpan = initialLifeSpan;
     //turn off color variation for now
     //this.hue = random(hue-15,hue+15);
@@ -235,8 +252,9 @@ var Particle = function(pp,vv,hue) {
     }
 }
 
+
 //***************************************************************
-//Declare parent Attractor prototype
+//Attractor Prototypes
 //***************************************************************
 
 var GeneralAttractor = function(pos,s){
@@ -254,7 +272,7 @@ var GeneralAttractor = function(pos,s){
     }
         
     this.updateStrength = function(strengthIn) {
-        strength = strengthIn;
+        strength = -strengthIn;
     }
         
     this.getPos = function() {
