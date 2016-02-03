@@ -1,0 +1,25 @@
+h1,
+h2,
+h3,
+h4,
+h5,
+strong {
+  color: hsla(0, 15%, 40%, 1.0);
+  text-transform: uppercase;
+  font-family: 'Railway', sans-serif;
+  margin-top: 1.5em;
+  margin-bottom: 0em;
+} 
+
+body {
+  font-family: 'Railway', sans-serif;
+  background-color: hsla(180, 10%, 95%, 1.0);
+  color: hsla(0, 10%, 10%, 1.0);
+  margin: 2em;
+  font-size: 12pt;
+}
+
+#defaultCanvas0{
+    margin: 0px;
+    display: block;
+}
