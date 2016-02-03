@@ -1,14 +1,14 @@
-//var oneParticle;
-
 //empty array with no particles in it (yet)
 var particleSystem = []; 
 var attractors = [];
 
 //runs once, at page load.
 function setup() {
-    //associates canvas with #canvas object
+    //store window width and height for sizing the canvas later
     canvasWidth = windowWidth-100;
     canvasHeight = windowHeight-120;
+    
+    //associates canvas with #canvas object
     var canvas = createCanvas(canvasWidth,canvasHeight);
     
     //change refresh rate to 30 frames/second
@@ -19,13 +19,17 @@ function setup() {
     //hue(0-360) saturation(0-100) brightness transparency
     colorMode(HSB,360,100,100,1);
     
-    //create attractor set
+    //create set of 10 attractors
     for (var i=0; i<10; i++){
-        var at = new Attractor(createVector(canvasWidth/2,(i+1)*canvasHeight/11),5);
+        var at = new GeneralAttractor(createVector(canvasWidth*Math.random(),canvasHeight*Math.random()),5);
+        //straight line down center of window
+        //var at = new GeneralAttractor(createVector(canvasWidth/2,(i+1)*canvasHeight/11),5);
     attractors.push(at);
     }
+
+    var test = new AttractorA(createVector(canvasWidth/2,canvasHeight/2),25);
     
-    //console.log(attractors[9].getPos());
+    attractors.push(test);
 }
 
 
@@ -34,7 +38,7 @@ function setup() {
 //runs 30x/second, as set by frame rate
 function draw() {
     //re-draw background each cycle
-    background(0,0,0,0.0002);
+    background(0,0,0,0.02);
    // blendMode(EXCLUSION);
     
     //go through the particle system and check if any particles are dead (start from the end, otherwise cutting components out of the array will cause problems)
@@ -60,11 +64,14 @@ function draw() {
         }
     }
     
+    /*
+    //make sure that the mouse is pressed inside the canvas. If it is, then run the createMightyParticles function as long as the mouse button is held down
     if(mouseIsPressed && mouseX>0 && mouseX < canvasWidth
       && mouseY > 0 && mouseY < canvasHeight){
         createMightyParticles();
-    }
+    }*/
        
+    //run through the attractors array, and draw each one
     attractors.forEach(function(at) {
         at.draw();
     });
@@ -85,6 +92,7 @@ function createMightyParticles(initialPos) {
     //play the loaded sound file when the function is called
     //expFc.play();
     
+    //make 20 particles (for mouseClicked version - mousePressed creates them continuously as long as the mouse is held)
     for(var i=0;i<20;i++){
         //create a variable to center the color scale around
         var hueSeed;
@@ -141,11 +149,13 @@ var Particle = function(pp,vv,hue) {
     var velocity = vv.copy();
     
     /*
-    //create an acceleration vector rotated to point downward, and store it in the object
+    //gravity - create an acceleration vector rotated to point downward, and store it in the object
     var accel = createVector(0,.4);
     accel.rotate(0,PI);
     //console.log(accel);
     var acceleration = accel;*/
+    
+    //create an acceleration vector with an initial value of zero
     var acceleration = createVector(0,0);
     
     //give the particle a random size and a lifespan
@@ -158,7 +168,7 @@ var Particle = function(pp,vv,hue) {
     this.hue = 180;
     
     this.update = function() {
-        //reduce its lifeSpan (same as this.lifeSpan = this.lifeSpan-1) or -=2 if you want to subtract 2 each time
+        //reduce its lifeSpan
         this.lifeSpan--;
 
         //keep the velocity from exceeding a value of 3 (limits influence of acceleration)
@@ -176,7 +186,7 @@ var Particle = function(pp,vv,hue) {
                 //multiply by the size to attract based on particle size 
                 att.div(distanceSq*pSize);
                 //multiply or divide depending on the result of the distance calc. Threshold at 1 so that particles don't accelerate to infinity
-                att.mult(10*A.getStrength());
+                att.mult(15*A.getStrength());
                 //add this vector to the particle acceleration
                 acceleration.add(att);
             }
@@ -190,7 +200,7 @@ var Particle = function(pp,vv,hue) {
         position.add(velocity);
     }
     
-    //function needs to draw itself
+    //particle needs to draw itself
     this.draw = function() {
         //turn off the stroke for the particles
         noStroke();
@@ -225,7 +235,11 @@ var Particle = function(pp,vv,hue) {
     }
 }
 
-var Attractor = function(pos,s){
+//***************************************************************
+//Declare parent Attractor prototype
+//***************************************************************
+
+var GeneralAttractor = function(pos,s){
     var pos = pos.copy();
     var strength = s;
     
@@ -239,7 +253,20 @@ var Attractor = function(pos,s){
         return strength;
     }
         
+    this.updateStrength = function(strengthIn) {
+        strength = strengthIn;
+    }
+        
     this.getPos = function() {
         return pos.copy();
     }
+}
+
+//Declare child attractor prototype
+function AttractorA(pos,s) {
+    //tell it to use GeneralAttractor constructor (use arguments when there are no function arguments to pass)
+    GeneralAttractor.apply(this,arguments);
+    
+    //update the strength of the attractor using the updateStrength function in the GeneralAttractor method
+    this.updateStrength(s);
 }
