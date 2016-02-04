@@ -1,4 +1,7 @@
-//empty array with no particles in it (yet)
+//Polymorphism was based on the examples in the Nature of Code by Daniel Shiffman, //and translated to p5.js partly with the help of the code posted at //https://zipcon.net/~swhite/docs/computers/languages/object_oriented_JS/inheritance.html
+
+
+//empty arrays for storing particles and attractors
 var particleSystem = []; 
 var attractors = [];
 
@@ -24,22 +27,26 @@ function setup() {
     colorMode(HSB,360,100,100,1);
     
     //create set of 10 GeneralAttractors
-    for (var i=0; i<10; i++){
+    for (var i=0; i<20; i++){
         //var at = new GeneralAttractor(createVector
           //  (canvasWidth*Math.random(),canvasHeight*Math.random()),Math.random()*5);
         //straight line down center of window
-        var at = new GeneralAttractor(createVector(canvasWidth/2,
-        (i+1)*canvasHeight/11),7);
+        //var at = new GeneralAttractor(createVector(canvasWidth/2,
+        //(i+1)*canvasHeight/11),7);
+        
+        var at = new GeneralAttractor(createVector
+        (canvasWidth*Math.random(),canvasHeight*Math.random()),5);
+        
         attractors.push(at);
     }
 
     //add a few copies of an AttractorA (negative attraction)
-    for (var i=0; i<10; i++){
-        //var attA = new AttractorA(createVector
-        //(canvasWidth*Math.random(),canvasHeight*Math.random()),5);
+    for (var i=0; i<20; i++){
+        var attA = new AttractorA(createVector
+        (canvasWidth*Math.random(),canvasHeight*Math.random()),5);
     
-        var attA = new AttractorA(createVector(canvasWidth/3,
-        (i/2)*canvasHeight/11),7);
+        //var attA = new AttractorA(createVector(canvasWidth/3,
+        //(i/2)*canvasHeight/11),7);
         attractors.push(attA);
     }
     
@@ -69,6 +76,10 @@ function draw() {
     for(var i = particleSystem.length-1; i>=0; i--) {
         //grab one particle from the system
         var p = particleSystem[i];
+        
+        //var test = p.seek(createVector(width/2,height/2));
+        //console.log(test);
+        //applyForce(p,createVector(0,1));
         
         //check if the particle is dead
         if(p.areYouDeadYet()){
@@ -137,11 +148,11 @@ function createMightyParticles(initialPos) {
         //if it's the first particle in the system, set the value 
         //of hueSeed to a random # between 20 and 340 (this will 
         //set the color for the whole system)
-        if(i==0){
+        //if(i==0){
             //change to constant color for now
             //hueSeed=(50);
             //hueSeed = random(20,340);
-        }
+        //}
         
         //Set the hue for each particle in the series to be within 20 units 
         //of the hueSeed color (so that they're all different shades of 
@@ -195,14 +206,7 @@ var Particle = function(pp,vv,hue) {
     var position = pp.copy();
     var velocity = vv.copy();
     var typeA = false;
-    
-    /*
-    //gravity - create an acceleration vector rotated to point downward, 
-    //and store it in the object
-    var accel = createVector(0,.4);
-    accel.rotate(0,PI);
-    //console.log(accel);
-    var acceleration = accel;*/
+    var speedLimit = 3;
     
     //create an acceleration vector with an initial value of zero
     var acceleration = createVector(0,0);
@@ -219,11 +223,11 @@ var Particle = function(pp,vv,hue) {
     this.update = function() {
         //reduce its lifeSpan
         this.lifeSpan--;
-
+  
         //keep the velocity from exceeding a value of 3 (limits influence of
         //acceleration)
-       // velocity.limit(3);
-      
+        velocity.limit(speedLimit);
+        
         //go through attractor array and update particles accordingly
         attractors.forEach(function(A){
             //create a new vector att that points from the particle to the 
@@ -249,12 +253,25 @@ var Particle = function(pp,vv,hue) {
             
         });
         
+        //tell particle to seek the center of the screen:
+        var newAcc = this.seek(createVector(width/2,height/2));
+        //console.log(newAcc);
+        
         //position is a vector; add a vector using p5.js add function. 
         //Stores result in the original vector.
         //update the veocity and position vectors 
         if (typeA){
-            velocity.add(acceleration.mult(-1));
+            /*velocity.add(acceleration.mult(-1));
+            //this.applyForce(acceleration.mult(-1));
             acceleration.mult(0);
+            position.add(velocity);*/
+            
+            //use newAcc to account for the force added in particle autonomy mode
+            //(should be attracted to the center of the screen)
+            velocity.add(newAcc.mult(-1));
+            //this.applyForce(newAcc.mult(-1));
+            newAcc.mult(0);
+            velocity.limit(3);
             position.add(velocity);
         }
         else{
@@ -305,8 +322,46 @@ var Particle = function(pp,vv,hue) {
     }
     
     
+    this.getVectors = function() {
+        //console.log('getVectors');
+        var objPos = position.copy();
+        var objVel = velocity.copy();
+        var objAcc = acceleration.copy();
+        return {objPos,objVel,objAcc};
+    }
+    
     this.setTypeA = function() {
         typeA = true;
+    }
+    
+
+    //make particle "want" to move in a particular direction
+    //input current position vector, and particle target vector.
+    this.seek = function(target) {
+        var vectorsIn = this.getVectors();
+                
+        //console.log(vectorsIn.objPos);
+        var desired = vectorsIn.objPos.sub(target);
+        desired.normalize();
+        
+        //doesn't appear to actually do anything
+        desired.mult(speedLimit);
+        
+        var steer = desired.sub(vectorsIn.objVel);
+        
+        //theoretically, this number should control the strength of "preference" for
+        //the target location. Doesn't seem to do much.
+        steer.limit(30);
+        
+        
+        updatedVectors = applyForce(this,steer);
+        
+        //console.log(updatedVectors.newAcc);
+        //should return three new pos, accel, veloc vectors to the function space. 
+        //What to do with them? For now, just return newAcc for the update function
+        
+        return updatedVectors.newAcc;
+ 
     }
     
 }
@@ -367,4 +422,15 @@ function AttractorA(pos,s) {
     //update the strength of the attractor using the updateStrength 
     //function in the GeneralAttractor method
     this.invertStrength(s);
+}
+
+//generic function to apply an input force vector to an object
+function applyForce(object, force) {
+    var vectors = object.getVectors();
+
+    newPos = vectors.objPos;
+    newVel = vectors.objVel;
+    newAcc = vectors.objAcc.add(force);
+    
+    return {newPos,newVel,newAcc};
 }
