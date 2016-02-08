@@ -14,8 +14,6 @@ function setup() {
     //store window width and height for sizing the canvas later
     canvasWidth = windowWidth-100;
     canvasHeight = windowHeight-120;
-    attractorDensity = Math.floor(1/13000*canvasWidth*canvasHeight);
-    particleNumberLimit = Math.floor(1/8000*canvasWidth*canvasHeight);
     
     //associates canvas with #canvas object
     var canvas = createCanvas(canvasWidth,canvasHeight);
@@ -23,13 +21,13 @@ function setup() {
     //change refresh rate to 30 frames/second
     frameRate(30);
     
-    background(240,100,15,0.2);
+    background(0);
     
     //hue(0-360) saturation(0-100) brightness transparency
     colorMode(HSB,360,100,100,1);
     
     //create set of 10 GeneralAttractors
-    for (var i=0; i<attractorDensity; i++){
+    for (var i=0; i<20; i++){
         //var at = new GeneralAttractor(createVector
           //  (canvasWidth*Math.random(),canvasHeight*Math.random()),Math.random()*5);
         //straight line down center of window
@@ -37,13 +35,13 @@ function setup() {
         //(i+1)*canvasHeight/11),7);
         
         var at = new GeneralAttractor(createVector
-            (canvasWidth*Math.random(),canvasHeight*Math.random()),5);
+        (canvasWidth*Math.random(),canvasHeight*Math.random()),5);
         
         attractors.push(at);
     }
 
     //add a few copies of an AttractorA (negative attraction)
-    for (var i=0; i<attractorDensity; i++){
+    for (var i=0; i<20; i++){
         var attA = new AttractorA(createVector
         (canvasWidth*Math.random(),canvasHeight*Math.random()),5);
     
@@ -59,7 +57,7 @@ function windowResized() {
     resizeCanvas(canvasWidth, canvasHeight);
     canvasWidth = windowWidth-100;
     canvasHeight = windowHeight-120;
-    background(240,100,15,0.2);
+    background(0);
 }
 
 //*******************************************************
@@ -69,7 +67,7 @@ function windowResized() {
 //runs 30x/second, as set by frame rate
 function draw() {
     //re-draw background each cycle
-    background(240,100,15,0.2);
+    background(0,0,0,0.2);
    // blendMode(EXCLUSION);
     
     //go through the particle system and check if any particles are dead 
@@ -93,7 +91,7 @@ function draw() {
             //if there are fewer than 1000 particles in the system, and all 
             //of the particles are outside of the screen, make a new particle 
             //system at the position where the last particle died
-            if (particleSystem.length < particleNumberLimit  && p.getPos().x < canvasWidth 
+            if (particleSystem.length < 150  && p.getPos().x < canvasWidth 
                 && p.getPos().x > 0 && p.getPos().y > 0 && p.getPos().y < height){
                
                 createMightyParticles(p.getPos());
@@ -105,12 +103,6 @@ function draw() {
             p.draw();
             p.update();
         }
-    }
-    
-    for(var i = attractors.length-1;i>=0;i--){
-        
-        var v = attractors[i];
-        v.update();
     }
     
     /*
@@ -204,7 +196,7 @@ function createMightyParticles(initialPos) {
 
 
 //*******************************************************
-//Create Particle Function
+//Create Particle Prototype
 //*******************************************************
 
 //use uppercase to describe an object
@@ -214,7 +206,7 @@ var Particle = function(pp,vv,hue) {
     var position = pp.copy();
     var velocity = vv.copy();
     var typeA = false;
-    var speedLimit = 2.5;
+    var speedLimit = 3;
     
     //create an acceleration vector with an initial value of zero
     var acceleration = createVector(0,0);
@@ -279,7 +271,7 @@ var Particle = function(pp,vv,hue) {
             velocity.add(newAcc.mult(-1));
             //this.applyForce(newAcc.mult(-1));
             newAcc.mult(0);
-            velocity.limit(2.5);
+            velocity.limit(3);
             position.add(velocity);
         }
         else{
@@ -359,7 +351,7 @@ var Particle = function(pp,vv,hue) {
         
         //theoretically, this number should control the strength of "preference" for
         //the target location. Doesn't seem to do much.
-        steer.limit(10);
+        steer.limit(30);
         
         
         updatedVectors = applyForce(this,steer);
@@ -394,52 +386,17 @@ function ParticleA(pos,vel,hue) {
 var GeneralAttractor = function(pos,s){
     var pos = pos.copy();
     var strength = s;
-    var transl = createVector(0,1).mult(.2).rotate(TWO_PI*Math.random());
     
     this.draw = function(v) {
         noStroke();
         if (abs(strength)==strength){
-            //fill(180,100,98);
-            fill(180,60,75);
-            ellipse(pos.x,pos.y,1.5*strength,1.5*strength);
-            strokeWeight(0.25);
-            stroke(180,100,50);
-            noFill();
-            ellipse(pos.x,pos.y,strength*5,strength*5);
-            ellipse(pos.x,pos.y,strength*15,strength*15);
-        }
-        else {
-            fill(320,90,95);
+            fill(0,100,100);
             ellipse(pos.x,pos.y,strength,strength);
-            strokeWeight(0.25);
-            stroke(320,90,55);
-            noFill();
-            ellipse(pos.x,pos.y,strength*2,strength*2);
-            ellipse(pos.x,pos.y,strength*8,strength*8);
-        }
-        
-    }
-    
-    this.update = function(v) {
-        
-        if (pos.x < canvasWidth && pos.x > 0 && pos.y > 0 && pos.y < height){
-            pos = pos.add(transl);
         }
         else {
-            transl = transl.mult(-1).rotate(Math.random()*PI/4);
-            pos = pos.add(transl);
+            fill(255,255,255);
+            ellipse(pos.x,pos.y,strength,strength);
         }
-        
-                
-        if (abs(strength)==strength){
-            strength = strength+(Math.random()-.5);
-            strength = constrain(strength,2,6);
-        }
-        else {
-            strength = strength+(Math.random()-.5);
-            strength = constrain(strength,-6,-2);
-        }
-        
         
     }
     
@@ -477,3 +434,5 @@ function applyForce(object, force) {
     
     return {newPos,newVel,newAcc};
 }
+Status API Training Shop Blog About Pricing
+© 2016 GitHub, Inc. Terms Privacy Security Contact Help
