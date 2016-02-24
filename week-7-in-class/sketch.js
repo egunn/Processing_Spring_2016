@@ -40,7 +40,7 @@ function setup() {
     
     attractors.push(at);
     
-    print(table.getRowCount()+ "total rows in table");
+    //print(table.getRowCount()+ "total rows in table");
 
     //for each row in table, grab name of company and amount in USD.
     //Look for company inside object file. If it exists, add USD to amount that was there.
@@ -48,6 +48,7 @@ function setup() {
         var cname = table.getString(r,"company_name");
         var invested = table.getString(r,"amount_usd");
         var iname = table.getString(r,"investor_name");
+        //console.log(iname);
 
         //convert string to integer to check for empty columns. Store in variable. 
         invested = parseInt(invested);
@@ -115,7 +116,7 @@ function setup() {
     //console.log(attractors[9].getPos());
     
     //save top 200 companies
-    aAggregated = aAggregated.slice(0,200);
+    aAggregated = aAggregated.slice(0,10); //return to 200 when done debugging
     
     //go through tables for those 200 companies, and save connection {} for each one that stores
     //company, investor, amount, and data. 
@@ -123,8 +124,8 @@ function setup() {
     for (var r=0;r<table.getRowCount();r++){
         //store company name from table
         var compname = table.getString(r,"company_name");
-        /*var invested = table.getString(r,"amount_usd");
-        var iname = table.getString(r,"investor_name");*/
+        var invested = table.getString(r,"amount_usd");
+        var investName = table.getString(r,"investor_name");
         
         //use find function on the aAggregated array. Find function runs an anonymous function that we will define.
         //anonymous function needs an element, and index, and an array. Element is the thing we hand it, 
@@ -141,13 +142,15 @@ function setup() {
         });
         
         var foundInvestor = aAggregatedInvestors.find(function(element, index, array){
+            
            //takes the element we gave it, and compares it to the companyname stored from table.
            //If it is, returns true. If not, it returns false (to aAggregated.find). aAggregated.find gives us back 
            //the thing that we were trying to find which is the company name we were checking for
-           if(element.name == iname) return true;
+           if(element.name == investName) return true;
            else return false;
         });
         
+        //console.log(foundInvestor);
         
         //if aAggregated.find finds something, it returns the object that it found. If it doesn't, it returns
         //undefined. If it is undefined, we don't care. 
@@ -168,18 +171,23 @@ function setup() {
     //console.log(connections);
 
     //create particles
-    for(var i=0;i<100;i++){
+    for(var i=0;i<10;i++){ //has to be less than the length of aAggregated - increase back to 100 when done debugging
+        //console.log(aAggregated[i]);
         var p = new Particle(aAggregated[i].name,aAggregated[i].sum);
         particleSystem.push(p);
     }
     
-    
     connections.forEach(function(d)  {
-        var found = uniqueInvestors.find(function(uniqueInvestor){return uniqueInvestor == d.investor.name;});
+        var found = uniqueInvestors.find(function(uniqueInvestor){
+            //console.log(d.investor)
+            return uniqueInvestor == d.investor;});
         if (!found){ 
-            uniqueInvestors.push(found);
+            uniqueInvestors.push(d.investor);
         }
     });
+    
+   // console.log(uniqueInvestors.length)
+
 }
 
 
@@ -255,14 +263,12 @@ function draw() {
     //go through connections array and extract unique investors to an array, then iterate through it to draw.
     //If company is new, then draw it.
     
-    //connections.forEach(function(d,i)  {    
-    //for(var i=0; i<aggregatedInvestors.length;i++){
-    /*aggregatedInvestors.forEach(function(d,i){
+    
+    for(var i=0; i<uniqueInvestors.length;i++){
         noStroke();
         fill(100,100,40,.5);
-        ellipse(i*5,i*5,20,20);
-                
-    });*/
+        ellipse(i*5,i*5,20,20);      
+    }   
 }
 
 
