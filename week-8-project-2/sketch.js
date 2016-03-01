@@ -1,3 +1,5 @@
+//************Add text legend with mouse-over capability for categories??
+
 //var oneParticle;
 
 var table;
