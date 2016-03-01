@@ -40,6 +40,14 @@ function setup() {
     
     attractors.push(at);
     
+    //make an array to fill with companyObjects
+    companiesArray = [];
+    
+    //setup company object to populate in table read below.        
+    companyObject = {};
+        
+    companyObject.investors = [];
+    
     //print(table.getRowCount()+ "total rows in table");
 
     //for each row in table, grab name of company and amount in USD.
@@ -49,35 +57,69 @@ function setup() {
         var invested = table.getString(r,"amount_usd");
         var iname = table.getString(r,"investor_name");
         //console.log(iname);
-        
-        companyObject = {};
-        
-        companyObject.investors = [];
-        
-        console.log(companyObject);
 
-        //convert string to integer to check for empty columns. Store in variable. 
-        invested = parseInt(invested);
+       //console.log(companyObject);
 
-        //if it can't convert, returns NaN
-        if(!isNaN(invested)){
-            //if it has a property with cname (eg Facebook) 
-            //Object key is company name
-            if(aggregated.hasOwnProperty(cname)){
-                //add invested amount to value
-                aggregated[cname]+=invested;
                 
+        if(companiesArray.length > 0){    
+        //read through the companiesArray
+        for (var i = 0; i<companiesArray.length;i++){
+            
+            //console.log(companiesArray[i].name+ ", " +cname);
+            
+            //if the company is already stored as an object in companiesArray
+            if (companiesArray[i].name == cname) {
+                
+                companiesArray[i].name = cname;
+
+                
+                //set var to check whether name is found, init as false
+                investorFound = false;
+                
+                //look in the investors array and check whether the investor is already there
+                for (var j = 0; j<companiesArray[i].investors;j++){
+                    //if a name in the companies array matches the iname stored, 
+                    if (companiesArray[i].investors[j] == iname){
+                        investorFound == true;
+                    }
+                    //if the investor isn't already in the array, add them
+                    else{
+                        //add the investor name to the investors array stored in that object.
+                        companiesArray[i].investors.push(iname);
+                    }
+                }
+                      
             }
-            else {
+        }
+        }
+        else if(companiesArray.length == 0){
+            companyObject.name = cname;
+            
+            //convert string to integer to check for empty columns. Store in variable. 
+            invested = parseInt(invested);
+
+            //if it can't convert, returns NaN
+            if(!isNaN(invested)){
+                //if it has a property with cname (eg Facebook) 
+                //Object key is company name
+                //if the company is already in the list
+                if(companyObject.sum == 0){
+                    //add invested amount to value
+                    companyObject.sum =invested;
+
+                }
+                else {
                 //otherwise, add a new property with the invested amount
                 //have to use aggregated[] format b/c cname has spaces in it
                 //can't do aggregated.Google Inc w/ a space
-                aggregated[cname] = invested;
+                companyObject.sum += invested;
             }
-                  
+            
         }
+        companiesArray.push(companyObject);
+        //aggregatedInvestors[iname]="";
         
-        aggregatedInvestors[iname]="";
+        console.log(companiesArray);
          
     }
     
@@ -195,6 +237,7 @@ function setup() {
     
    // console.log(uniqueInvestors.length)
 */
+}
 }
 
 

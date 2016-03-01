@@ -6,6 +6,8 @@ var aggregated = {};
 var aggregatedInvestors = {};
 var connections = [];
 var uniqueInvestors = [];
+var clicked = {};
+var companyToDisplay = null;
 
 //callback function that forces processing to wait until file loads before running rest of code.
 function preload(){
@@ -49,7 +51,7 @@ function setup() {
         var invested = table.getString(r,"amount_usd");
         var iname = table.getString(r,"investor_name");
         //console.log(iname);
-
+        
         //convert string to integer to check for empty columns. Store in variable. 
         invested = parseInt(invested);
 
@@ -60,6 +62,7 @@ function setup() {
             if(aggregated.hasOwnProperty(cname)){
                 //add invested amount to value
                 aggregated[cname]+=invested;
+                
             }
             else {
                 //otherwise, add a new property with the invested amount
@@ -116,11 +119,12 @@ function setup() {
     //console.log(attractors[9].getPos());
     
     //save top 200 companies
-    aAggregated = aAggregated.slice(0,200); //return to 200 when done debugging
+    aAggregated = aAggregated.slice(0,50); //return to 200 when done debugging
     
     //go through tables for those 200 companies, and save connection {} for each one that stores
     //company, investor, amount, and data. 
     //does company in this row of the table exist in the aAggregated array? 
+    
     for (var r=0;r<table.getRowCount();r++){
         //store company name from table
         var compname = table.getString(r,"company_name");
@@ -141,37 +145,38 @@ function setup() {
            else {return false;}
         });
         
-        var foundInvestor = aAggregatedInvestors.find(function(element, index, array){
+        if(foundCompany){
+            var foundInvestor = aAggregatedInvestors.find(function(element, index, array){
             
-           //takes the element we gave it, and compares it to the companyname stored from table.
-           //If it is, returns true. If not, it returns false (to aAggregated.find). aAggregated.find gives us back 
-           //the thing that we were trying to find which is the company name we were checking for
-           if(element.name == investName) {return true;}
-           else {return false;}
-        });
-        
-        //console.log(foundInvestor);
-        
-        //if aAggregated.find finds something, it returns the object that it found. If it doesn't, it returns
-        //undefined. If it is undefined, we don't care. 
-        //use an if to see if foundCompany exists.
-       if(foundCompany && foundInvestor){
-           //make a new connection object
-           var connection = {};
-           //and store the company in the connection object.
-            connection.company = foundCompany;
-            connection.investor = foundInvestor;
-            connection.amount = table.getString(r,"amount_usd");
-            //connection.date = table.getString(r,"date");
-            connections.push(connection);
-       }     
+               //takes the element we gave it, and compares it to the companyname stored from table.
+               //If it is, returns true. If not, it returns false (to aAggregated.find). aAggregated.find gives us back 
+               //the thing that we were trying to find which is the company name we were checking for
+               if(element.name == investName) {return true;}
+               else {return false;}
+            });
+            
+            if(foundInvestor){
+                 //make a new connection object
+                var connection = {};
+               //and store the company in the connection object.
+                connection.company = foundCompany;
+                connection.investor = foundInvestor;
+                connection.amount = table.getString(r,"amount_usd");
+                //connection.date = table.getString(r,"date");
+                connections.push(connection);
 
+            }
+            
+        }
+        
+      
     }
+   
 
     //console.log(connections);
 
     //create particles
-    for(var i=0;i<200;i++){ //has to be less than the length of aAggregated - increase back to 100 when done debugging
+    for(var i=0;i<aAggregated.length;i++){ //has to be less than the length of aAggregated - increase back to 100 when done debugging
         //console.log(aAggregated[i]);
         var p = new Particle(aAggregated[i].name,aAggregated[i].sum);
         particleSystem.push(p);
@@ -186,7 +191,19 @@ function setup() {
         }
     });
     
-   // console.log(uniqueInvestors.length)
+    //console.log(uniqueInvestors);
+
+    console.log(connections);
+    
+    for(var i=0; i<uniqueInvestors.length;i++){
+    
+        angle = i*360/uniqueInvestors.length;
+        uniqueInvestors[i].x = 250*Math.sin(angle)+width/2;
+        uniqueInvestors[i].y = 250*Math.cos(angle)+height/2;
+           
+    } 
+    
+    //console.log(particleSystem);
 
 }
 
@@ -201,74 +218,138 @@ function draw() {
     background(0);
    // blendMode(EXCLUSION);
     
-
-    //run collision minimization 3x before giving me the results
-    for(var STEPS = 0; STEPS < 4; STEPS++) {
-    
-        //pairwise comparison - save unique pair  particle a and b to compare to see if they are intersecting
-        //if intersecting, adjust by precise amount needed to remove overlap.
-        for(var i=0;i<particleSystem.length-1;i++){
-            for(var j=i+1;j<particleSystem.length;j++){
-                var pa = particleSystem[i];
-                var pb = particleSystem[j];
-
-                var ab= p5.Vector.sub(pb.pos,pa.pos);
-                //distSq
-                var distSq = ab.magSq();
-
-                //since working with distance squared, also square the sum (faster than taking sqrt)
-                //if particles intersect
-                if(distSq <=sq(pa.radius+pb.radius)){
-                    var dist = sqrt(distSq);
-                    //calculate the overlap distance
-                    var overlap = (pa.radius+pb.radius)-dist;
-                    //normalize the ab vector
-                    ab.div(dist);
-                    //scale it by the overlap distance
-                    ab.mult(overlap*0.5);
-                    //add the ab vector to the position of particle b
-                    pb.pos.add(ab);
-                    //reverse the direction of the ab vector
-                    ab.mult(-1);
-                    //add it to the position of particle a
-                    pa.pos.add(ab);
-                    
-                    //"dumping" velocity - add friction when there are collisions. If overlapping, don't move as fast. 
-                    //replaces limit function, which is computationally expensive
-                    pa.vel.mult(0.97);
-                    pb.vel.mult(0.97);
-                }
+    if (companyToDisplay != null){
+        
+        companyToDisplay.draw();
+        companyToDisplay.update();
+        
+        //console.log(companyToDisplay.name);
+        //console.log(connections);
+        for (var i = 0; i<connections.length; i++){
+            if (connections[i].company.name == companyToDisplay.name){
+                console.log(connections[i].investor);
+                break;
             }
         }
     }
     
+    else {
+        //run collision minimization 3x before giving me the results
+        for(var STEPS = 0; STEPS < 4; STEPS++) {
+
+            //pairwise comparison - save unique pair  particle a and b to compare to see if they are intersecting
+            //if intersecting, adjust by precise amount needed to remove overlap.
+            for(var i=0;i<particleSystem.length-1;i++){
+                for(var j=i+1;j<particleSystem.length;j++){
+                    var pa = particleSystem[i];
+                    var pb = particleSystem[j];
+
+                    var ab= p5.Vector.sub(pb.pos,pa.pos);
+                    //distSq
+                    var distSq = ab.magSq();
+
+                    //since working with distance squared, also square the sum (faster than taking sqrt)
+                    //if particles intersect
+                    if(distSq <=sq(pa.radius+pb.radius)){
+                        var dist = sqrt(distSq);
+                        //calculate the overlap distance
+                        var overlap = (pa.radius+pb.radius)-dist;
+                        //normalize the ab vector
+                        ab.div(dist);
+                        //scale it by the overlap distance
+                        ab.mult(overlap*0.5);
+                        //add the ab vector to the position of particle b
+                        pb.pos.add(ab);
+                        //reverse the direction of the ab vector
+                        ab.mult(-1);
+                        //add it to the position of particle a
+                        pa.pos.add(ab);
+
+                        //"dumping" velocity - add friction when there are collisions. If overlapping, don't move as fast. 
+                        //replaces limit function, which is computationally expensive
+                        pa.vel.mult(0.97);
+                        pb.vel.mult(0.97);
+                    }
+                }
+            }
+        }
     
-  //go through the particle system and check if any particles are dead (start from the end, otherwise cutting components out of the array will cause problems)
-    for(var i = particleSystem.length-1; i>=0; i--) {
-        //grab one particle from the system
-        var p = particleSystem[i];
+    
+      //go through the particle system and check if any particles are dead (start from the end, otherwise cutting 
+        //components out of the array will cause problems)
+        for(var i = particleSystem.length-1; i>=0; i--) {
+            //grab one particle from the system
+            var p = particleSystem[i];
 
-        p.draw();
-        p.update();
-        
+            p.draw();
+            p.update();
+
+        }
+
+        attractors.forEach(function(at) {
+            at.draw();
+        });
     }
-       
-    attractors.forEach(function(at) {
-        at.draw();
-    });
-
+    
     //console.log(aggregatedInvestors);
    //draw investors 
     
     //go through connections array and extract unique investors to an array, then iterate through it to draw.
     //If company is new, then draw it.
     
-    
     for(var i=0; i<uniqueInvestors.length;i++){
         noStroke();
         fill(100,100,40,.5);
-        ellipse(i*5,i*5,20,20);      
+        ellipse(uniqueInvestors[i].x,uniqueInvestors[i].y,5,5);     
+    
     }   
+    
+    //connect investors to particleSystem item using a line
+    /*
+    //console.log(uniqueInvestors);
+    for(var j=0; j<connections.length;j++){
+        
+        console.log(particleSystem);
+        particleSystem.find(function(element, index, array){
+            if(element.name == particleSystem[i].name) {return true;}
+               else {return false;}
+            });
+        
+    }*/
+    
+    
+    /*
+           var foundCompany = aAggregated.find(function(element, index, array){
+           //takes the element we gave it, and compares it to the companyname stored from table.
+           //If it is, returns true. If not, it returns false (to aAggregated.find). aAggregated.find gives us back 
+           //the thing that we were trying to find which is the company name we were checking for
+           if(element.name == compname) {return true;}
+           else {return false;}
+        });
+        
+        if(foundCompany){
+            var foundInvestor = aAggregatedInvestors.find(function(element, index, array){
+            
+               //takes the element we gave it, and compares it to the companyname stored from table.
+               //If it is, returns true. If not, it returns false (to aAggregated.find). aAggregated.find gives us back 
+               //the thing that we were trying to find which is the company name we were checking for
+               if(element.name == investName) {return true;}
+               else {return false;}
+            });
+            
+            if(foundInvestor){
+                 //make a new connection object
+                var connection = {};
+               //and store the company in the connection object.
+                connection.company = foundCompany;
+                connection.investor = foundInvestor;
+                connection.amount = table.getString(r,"amount_usd");
+                //connection.date = table.getString(r,"date");
+                connections.push(connection);
+
+            }*/
+                //console.log(clicked);
+    
 }
 
 
@@ -338,9 +419,12 @@ var Particle = function(n, s) {
                 if(instance.radius>initialRadius){
                     instance.radius-=4;
                 }
+                
             }
+                
         }
         
+
         var maximumRadius = 55;
         
         function incRadius(instance){
@@ -425,9 +509,38 @@ var Particle = function(n, s) {
         
 
     }
-    
+
 
 }
+
+ 
+function mouseClicked() {
+              
+   /* clicked.state = true;
+    clicked.x = mouseX;
+    clicked.y = mouseY;
+    var point = createVector(mouseX, mouseY);*/
+    
+    for(var i=0; i<particleSystem.length; i++){
+        var particle = particleSystem[i];
+        var pointVec = createVector(mouseX,mouseY);
+        var particleVec = particle.pos.copy();
+        
+        var vecPtoPoint = particleVec.sub(pointVec);//p5.Vector.sub(point, particle);
+        if(vecPtoPoint.magSq() < sq(particle.radius)){
+            //click // activate
+            companyToDisplay = particle;
+            break;
+        }
+    }
+           /* if (value == 0)
+            companyToDisplay = instance;
+            console.log(companyToDisplay);*/
+    
+   // checkMouse(this);
+    //console.log(companyToDisplay);
+
+}   
 
 
 //***************************************************************
