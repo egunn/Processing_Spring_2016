@@ -41,9 +41,18 @@ function setup() {
     //hue(0-360) saturation(0-100) brightness transparency
     colorMode(HSB,360,100,100,1);
     
-    //create attractor 
+    	
+    //create attractor
     var at = new Attractor(createVector(width/2,height/2),1);
-    
+    attractors.push(at);
+
+    var at = new Attractor(createVector(width/2-100,height/2),1);
+attractors.push(at);
+    var at = new Attractor(createVector(width/2-300,height/2),10);
+attractors.push(at);
+    var at = new Attractor(createVector(width/2+100,height/2),1);
+attractors.push(at);
+    var at = new Attractor(createVector(width/2+300,height/2),10);
     attractors.push(at);
     
     //print(table2.getRowCount()+ "total rows in table");
@@ -242,9 +251,10 @@ function draw() {
         
     }
        
+/*
     attractors.forEach(function(at) {
         at.draw();
-    });
+    });*/
 
 }
 
@@ -273,7 +283,7 @@ var Particle = function(n, s, c, cn) {
     this.categoryNumber = cn;
     
     //set particle radius
-    this.radius = sqrt(s)/4000;
+    this.radius = sqrt(s)/2500;
     var initialRadius = this.radius;
         
     var tempAng = random(TWO_PI);
@@ -294,7 +304,7 @@ var Particle = function(n, s, c, cn) {
     //this.hue = random(hue-15,hue+15);
 
     //create color map based on the number of categories found.
-    var hue = map(this.categoryNumber,0,numCategories,0,360);    
+    var hue = map(this.categoryNumber,0,numCategories,180,360);    
     this.hue = hue;
     
     this.update = function() {
@@ -318,15 +328,15 @@ var Particle = function(n, s, c, cn) {
                 instance.hue=hue;
                 isMouseOver = false;
                 if(instance.radius>initialRadius){
-                    instance.radius-=4;
+                    instance.radius-=5;
                 }
             }
         }
         
-        var maximumRadius = 62;
+        var maximumRadius = 90;
         
         function incRadius(instance){
-            instance.radius+=4;
+            instance.radius+=5;
             if(instance.radius>maximumRadius){
                 instance.radius = maximumRadius;
                 fill(255); 
