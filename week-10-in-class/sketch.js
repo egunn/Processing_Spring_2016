@@ -569,9 +569,6 @@ var Particle = function(n, s) {
 function Company() {
     this.name = name;
     this.cInvestors = [];
-    
-    this.update() = function(){};
-    this.draw(){};
 }
 
 //***************************************************************
