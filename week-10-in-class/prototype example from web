@@ -1,0 +1,11 @@
+//constructor
+var Circle = function(radius){
+this.radius = radius;
+}
+
+Circle.prototype.area = function(){
+    return Math.PI*this.radius*this.radius;
+}
+
+var a = new Circle(3), b=new Circle(4);
+a.area().toFixed(2);

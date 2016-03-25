@@ -1,3 +1,5 @@
+//What happened to category colors??
+
 var table;
 //input all companies as properties in the aggregated object 
 var aggregated = {};
@@ -14,7 +16,8 @@ function preload(){
     table=loadTable("data/investments_clean.csv","csv","header");
 }
 
-var particleSystem = []; 
+var particleSystem = [];
+var investorSystem =[];
 var attractors = [];
 
 
@@ -150,8 +153,7 @@ function setup() {
             if(element.name == compname) {return true;}
             else {return false;}
         });
-        
-        
+                
 
         if(foundCompany){
             var foundInvestor = aAggregatedInvestors.find(function(element, index, array){
@@ -172,19 +174,10 @@ function setup() {
         }
         
     }
-   
-/*
-    //draw "back" button (DOM element, requires p5.dom library styled in CSS)
-    button = createButton('back');
-    button.position(25,90);
-    button.mousePressed(buttonPress);
-    
-    button.addClass('button');
-   
-*/
+
     //console.log(connections);
 
-    //create particles
+    //create company particles
     for(var i=0;i<aAggregated.length;i++){ 
         //has to be less than the length of aAggregated - increase back to 100 when done debugging
         //console.log(aAggregated[i]);
@@ -214,29 +207,33 @@ function setup() {
     })
 
             
-    //save top 200 companies
+    //save top 200 investors
     uniqueInvestorsCut = uniqueInvestorsCut.slice(0,200); //return to 200 when done debugging
     
-        
     //console.log(uniqueInvestorsCut);
     
-    //calculate x and y positions to place all unique investors in a ring around the force layout.
+//******** Should this be uniqueInvestorsCut?? 
+    
+    //set up unique investors array
     for(var i=0; i<uniqueInvestors.length;i++){
-        angle = i*360/uniqueInvestors.length;
-        uniqueInvestors[i].x = 190*Math.sin(angle)+width/2;
-        uniqueInvestors[i].y = 190*Math.cos(angle)+height/2;     
+        //calculate x and y positions to place all unique investors in a ring around the force layout.
+        var angle = i*360/uniqueInvestors.length;
+        var investorRadius = 190;
+        uniqueInvestors[i].pos = createVector(investorRadius*Math.sin(angle)+width/2,investorRadius*Math.cos(angle)+height/2);   
+        
+        //create investor particles
+        var p = new Particle(uniqueInvestors[i].name,uniqueInvestors[i].amount);
+        //run prototype function on each entry in the investorSystem array to create investor functions
+        //(need these to run later in draw function - .drawInvestors)
+        p.investors(uniqueInvestors[i].pos);
+        investorSystem.push(p);
+        
     } 
     
-    //console.log(particleSystem);
+    console.log(investorSystem);
 
 }
 
-/*
-//what to do when button is pressed 
-function buttonPress() {
-    console.log('here');
-}
-*/
 
 //***************************************************************
 //DRAW
@@ -275,7 +272,9 @@ function draw() {
         
         investorsToDisplay=[];
         
-        for (var i = 0; i<connections.length; i++){
+//***********Need to replace this with objects from the uniqueInvestors array and their corresponding companies and sums
+//Similar to Cara 
+       for (var i = 0; i<connections.length; i++){
                   
             if (connections[i].company.name == companyToDisplay.name){
                 //console.log(connections[i].company.name);                
@@ -289,16 +288,16 @@ function draw() {
                     investorsToDisplay.push({investor: connections[i].investor, amount:connections[i].amount});
                     
                 }
-                
-                //console.log(connections[i]);
-                //console.log(investorsToDisplay);
-                //noLoop();
+
             }
             
         }
         
-        //console.log(investorsToDisplay.length);
         
+
+        
+        
+        /*Replacing:
         //draw investors stored in the unique investors array, using x and y values stored in the array
         for(var i=0; i<investorsToDisplay.length;i++){
             noStroke();
@@ -313,7 +312,15 @@ function draw() {
                  companyToDisplay.pos.x, companyToDisplay.pos.y);
             //console.log(companyToDisplay);
             //noLoop();
-        } 
+        } */
+        
+        //draw the investors using the function in the investors class
+        investorsToDisplay.forEach(function(inv){
+            console.log(inv);
+//******investorsToDisplay does not contain investor class objects - currently, built from array instead
+//need to implement new class structure in order to use drawInvestors function here!
+            inv.drawInvestors();
+        });
             
     }
     
@@ -321,12 +328,12 @@ function draw() {
     
     else{
     
-        //draw investors stored in the unique investors array, using x and y values stored in the array
-        for(var i=0; i<uniqueInvestors.length;i++){
-            noStroke();
-            fill(190,100,90,.5);
-            ellipse(uniqueInvestors[i].x,uniqueInvestors[i].y,5,5);    
-        }   
+        //draw all of the investors in the investors system, using the positions stored in each object
+        investorSystem.forEach(function(inv){
+            inv.drawInvestors();
+        });
+            
+           
     }  
 
     
@@ -391,7 +398,7 @@ function draw() {
             p.update();
 
         }
-
+        
         attractors.forEach(function(at) {
             at.draw();
         });
@@ -557,7 +564,6 @@ var Particle = function(n, s) {
                 this.radius*2);
         
     }
-
 }
 
  
@@ -566,20 +572,48 @@ var Particle = function(n, s) {
 //Company
 //***************************************************************
 
-function Company() {
+var Company = function () {
     this.name = name;
-    this.cInvestors = [];
+    this.pos = pos;
+    
+    this.drawCompanies = function(){
+        
+    }
 }
+
+Company.prototype = Particle;
+
 
 //***************************************************************
 //Investors
 //***************************************************************
 
-function Investors() {
+var Investor = function(pos) {
     this.name = name;
-    this.iCompanies = [];
+    this.cInvestors = [];
+    this.pos = pos;
+    
+    this.drawInvestors = function() {
+       
+    } 
     
 }
+
+Investor.prototype = Particle;
+
+
+//***************************************************************
+//Particle
+//***************************************************************
+
+var Particle = {
+    drawParticles: function(){
+        noStroke();
+        fill(60,100,90,.5);
+        ellipse(this.pos.x,this.pos.y,5,5);
+    }
+}
+
 
 //***************************************************************
 //Mouse Clicked
