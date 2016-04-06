@@ -210,12 +210,8 @@ function setup() {
     //save top 200 investors
     uniqueInvestorsCut = uniqueInvestorsCut.slice(0,200); //return to 200 when done debugging
     
-    //console.log(uniqueInvestorsCut);
-    
-//******** Should this be uniqueInvestorsCut?? 
-    
     //set up unique investors array
-    for(var i=0; i<uniqueInvestors.length;i++){
+    for(var i=0; i<uniqueInvestorsCut.length;i++){
         //calculate x and y positions to place all unique investors in a ring around the force layout.
         var angle = i*360/uniqueInvestors.length;
         var investorRadius = 190;
@@ -224,7 +220,7 @@ function setup() {
         //create investor particles
         var p = new Particle(uniqueInvestors[i].name,uniqueInvestors[i].amount);
         //run prototype function on each entry in the investorSystem array to create investor functions
-        //(need these to run later in draw function - .drawInvestors)
+        //(need these to run later in draw function - .drawInvestor)
         //p.investors(uniqueInvestors[i].pos);
         investorSystem.push(p);
         
@@ -273,7 +269,6 @@ function draw() {
         investorsToDisplay=[];
         
 //***********Need to replace this with objects from the uniqueInvestors array and their corresponding companies and sums
-//Similar to Cara 
        for (var i = 0; i<connections.length; i++){
                   
             if (connections[i].company.name == companyToDisplay.name){
@@ -292,34 +287,14 @@ function draw() {
             }
             
         }
-        
-        
 
-        
-        
-        /*Replacing:
-        //draw investors stored in the unique investors array, using x and y values stored in the array
-        for(var i=0; i<investorsToDisplay.length;i++){
-            noStroke();
-            fill(190,100,90,.7);
-            
-            ellipse(investorsToDisplay[i].investor.x,investorsToDisplay[i].investor.y,15,15); 
-            //console.log(investorsToDisplay[i].investor.x);
-                         
-            //draw line to investors
-            stroke(100,100,40,.7);
-            line(investorsToDisplay[i].investor.x,investorsToDisplay[i].investor.y,
-                 companyToDisplay.pos.x, companyToDisplay.pos.y);
-            //console.log(companyToDisplay);
-            //noLoop();
-        } */
         
         //draw the investors using the function in the investors class
         investorsToDisplay.forEach(function(inv){
             console.log(inv);
 //******investorsToDisplay does not contain investor class objects - currently, built from array instead
-//need to implement new class structure in order to use drawInvestors function here!
-            inv.drawInvestors();
+//need to implement new class structure in order to use drawInvestor function here!
+            inv.drawInvestor();
         });
             
     }
@@ -330,7 +305,7 @@ function draw() {
     
         //draw all of the investors in the investors system, using the positions stored in each object
         investorSystem.forEach(function(inv){
-            inv.drawInvestors();
+            inv.drawInvestor();
         });
             
            
@@ -547,8 +522,7 @@ var Particle = function(n, s) {
         
     }
     
-    //drawParticles: function(){
-    
+
     //function needs to draw itself
     this.draw = function() {
         //turn off the stroke for the particles
@@ -578,7 +552,11 @@ var Company = function () {
     this.name = name;
     this.pos = pos;
     
-    this.drawCompanies = function(){
+    this.drawCompany = function(){
+        
+    }
+    
+    this.updateCompany = function() {
         
     }
 }
@@ -595,13 +573,16 @@ var Investor = function(pos) {
     this.cInvestors = [];
     this.pos = pos;
     
-    this.drawInvestors = function() {
+    this.drawInvestor = function() {
 
         noStroke();
         fill(60,100,90,.5);
         ellipse(this.pos.x,this.pos.y,5,5);       
     } 
     
+    this.updateInvestor = function() {
+        
+    }
 }
 
 Investor.prototype = Particle;
