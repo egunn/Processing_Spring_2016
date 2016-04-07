@@ -9,6 +9,7 @@ var aggregatedInvestors = {};
 var connections = [];
 var uniqueInvestors = [];
 var allConnections =[];
+var selectedInvestor;
 var clicked = {};
 var companyToDisplay = null;
 var button;
@@ -144,19 +145,41 @@ function setup() {
         var compname = table.getString(r, "company_name");
         var invested = table.getString(r, "amount_usd");
         var investName = table.getString(r, "investor_name");
+        
+        var tempConn = {investor:{}, company:{}, amount:0};
 
         //use find function on the aAggregated array. Find function runs an anonymous 
         //function that we define. Anonymous function needs an element, and index, and an array. Element 
         //is the thing we hand it, it creates an index to keep track of where the element is in the 
         //array, and the array is the aAggregated array that you are passing in. 
 
-        var foundCompany = aAggregated.find(function (element, index, array) {
-            //Compares element given to companyname stored from table. If same, returns true. If not, 
-            //returns false (to aAggregated.find). aAggregated.find gives back what we were trying to 
-            //find: the company name we were checking for
+        //Compares element given to companyname stored from table. If same, returns true. If not, 
+        //returns false (to aAggregated.find). aAggregated.find gives back what we were trying to 
+        //find: the company name we were checking for
+        var foundCompany = aAggregated.find(function (element, index, array) { 
+            
             if (element.name == compname) {
+                //make a new company particle, and store it in tempConn
+                tempConn.company = new Company(element.name, element.sum);
+
+                //check whether it's already in companySystem
+                var inSystem = companySystem.find(function(element, index, array){
+                    if (element.name == compname){
+                        return true;
+                    }
+                    else{
+                        return false;
+                    }
+                });
+                
+                if (!inSystem) {
+                    companySystem.push(tempConn.company);
+                }
+                
                 return true;
-            } else {
+            } 
+            //if it's not already in aAggregated, 
+            else {
                 return false;
             }
         });
@@ -165,6 +188,8 @@ function setup() {
         if (foundCompany) {
             var foundInvestor = aAggregatedInvestors.find(function (element, index, array) {
                 if (element.name == investName) {
+                    tempConn.investor = new Investor(element.name, element.amount);
+                     
                     return true;
                 } else {
                     return false;
@@ -172,13 +197,9 @@ function setup() {
             });
 
             if (foundInvestor) {
-                //make a new connection object
-                var connection = {};
-                //and store the company in the connection object.
-                connection.company = foundCompany;
-                connection.investor = foundInvestor;
-                connection.amount = table.getString(r, "amount_usd");
-                connections.push(connection);
+                tempConn.amount = table.getString(r, "amount_usd");
+                conn = new Connection(tempConn);
+                connections.push(conn);
             }
 
         }
@@ -187,21 +208,23 @@ function setup() {
 
     //console.log(connections); //amount of _this_ investment, company name and sum of investments, investor name and total invested
 
-
     //go through connections array and extract unique investors to an array. 
     //If company is not yet in the array, add it.
     connections.forEach(function (d) {
+
+        var invName = d.investor.name;
+        
         var found = uniqueInvestors.find(function (uniqueInvestor) {
-            return uniqueInvestor == d.investor;
+            return uniqueInvestor.name == invName;
         });
 
         if (!found) {
             uniqueInvestors.push(d.investor);
-
         }
     });
 
 
+    //console.log(uniqueInvestors[0]);
     //sort function on the array, anonymous fxn looks at each pair
     uniqueInvestors = uniqueInvestors.sort(function (investorA, investorB) {
         //sorts in descending order
@@ -210,9 +233,10 @@ function setup() {
 
 
     //save top 200 investors
-    uniqueInvestors = uniqueInvestors.slice(0, 200); //return to 200 when done debugging
+    investorSystem = uniqueInvestors.slice(0, 200); //return to 200 when done debugging
+    
 
-
+/*
     //create company particles
     for (var i = 0; i < aAggregated.length; i++) {
         //has to be less than the length of aAggregated - increase back to 100 when done debugging
@@ -220,7 +244,8 @@ function setup() {
         var c = new Company(aAggregated[i].name, aAggregated[i].sum);
         companySystem.push(c);
     }  
-    
+    */
+    /*
     //set up unique investors array
     for (var i = 0; i < uniqueInvestors.length; i++) {
         //calculate x and y positions to place all unique investors in a ring around the force layout.
@@ -235,7 +260,7 @@ function setup() {
         var p = new Investor(uniqueInvestors[i].name, uniqueInvestors[i].amount, pos);
         investorSystem.push(p);
 
-    }
+    }*/
     
     investorSystem.sort(function (a, b) {
         return a.radius - b.radius;
@@ -255,22 +280,6 @@ function setup() {
         
     });
     
-/*
-//************** Currently not making the right connections!! This example shows how the connections system needs to be built, but
-// ************* it is not using the correct elements in the connections array to do it - need to update line   company: companySystem[j]
-    for (var j = 0; j < investorSystem.length; j++) {
-
-        //make a Connection object containing the company and investor particles, and the amount of this investment
-        var conn = new Connection({
-             company: companySystem[j],
-             amount: connections[i].amount,
-             investor: investorSystem[j]
-        });
-            allConnections.push(conn);
-        }
-*/
-
-
 }
 
 
@@ -285,14 +294,16 @@ function draw() {
     if (!mouseListener){
         noStroke();
         fill(360, 0, 70, 1);
-        textSize(20);
-        text('A Spiral of Investment', 50, 65); 
-        fill(360, 0, 40, .9);
+        textSize(22);
+        text('The Investment Spiral', 50, 65); 
+        fill(360, 0, 50, 1);
         textSize(14);
-        text('A visualization of the CrunchBase database', 50, 95);
-        text('By Erica Gunn', 50, 113);
-        text('NEU 2016', 50, 131);
-        text('data from www.crunchbase.com', 50, height - 75);
+        text('A visualization of the top 200 companies', 50, 95);
+        text('in the 2013 CrunchBase database', 50, 113);
+        text('By Erica Gunn', 50, 135);
+        text('NEU 2016', 50, 153);
+        textSize(10);
+        text('data from www.crunchbase.com', 50, height - 70);
         text('“CrunchBase 2013 Snapshot” extracted 2013-12-12',50, height - 57); 
     }
 
@@ -366,8 +377,6 @@ function draw() {
                     //find the corresponding particle in the investorSystem array
                     for (var j = 0; j < investorSystem.length; j++) {
 
-                        //console.log(investorObject.investor.name);
-                        //console.log(investorSystem[j].name);
                         if (investorObject.investor.name == investorSystem[j].name) {
                             tempParticle = investorSystem[j];
 
@@ -379,6 +388,7 @@ function draw() {
                                 , investor: tempParticle
                             });
                             connectionsToDisplay.push(conn);
+
                         }
                     }
 
@@ -388,7 +398,7 @@ function draw() {
 
 
         }
-
+        
         connectionsToDisplay.forEach(function (e) {
             e.drawConnections();
         });
@@ -397,7 +407,7 @@ function draw() {
         //And draw them
         connectionsToDisplay.forEach(function (e) {
             e.investor.drawInvestors();
-            e.investor.updateParticles();
+            e.investor.updateInvestors();
         });
 
     } else {
@@ -412,8 +422,13 @@ function draw() {
         //draw all of the investors in the investors system, using the positions stored in each object
         investorSystem.forEach(function (e) {
             e.drawInvestors();
-            e.updateParticles();
+            e.updateInvestors();
         })
+        
+        if (selectedInvestor){
+            
+            selectedInvestor.updateInvestors();
+        }
 
 
     }
@@ -463,9 +478,7 @@ function draw() {
                         //add it to the position of particle a
                         pa.pos.add(ab);
 
-                        //"dumping" velocity - add friction when there are collisions. If overlapping,
-                        //don't move as fast. Replaces limit function, which is computationally
-                        //expensive
+                        //damp velocity
                         pa.vel.mult(0.97);
                         pb.vel.mult(0.97);
                     }
@@ -485,9 +498,6 @@ function draw() {
 
     }
 
-   /* attractors.forEach(function (at) {
-        at.draw();
-    });*/
 }
 
 
@@ -517,115 +527,14 @@ var Particle = {
 
         //draw the particle itself (better to do this after the line, so that the particle draws on top)
         //print(pp.constructor.name);
-
-        /*
-        if(typeof pp  == Company) fill(0, 100, 100);
-        else if(typeof pp == Investor) fill(120, 100, 100);
-        
-        if( pp == Company) print("I'm a company "+hello);
-        //if(typeof pp == Investor) print("I'm an investor"+hello);
-        */
-        
+    
         ellipse(this.pos.x
             , this.pos.y
             , this.radius * 2
             , this.radius * 2);
-        
-            //  noLoop();
-
     },
     
-/*    drawLabels: function () {
-       
-
-        
-    },*/
-
     updateParticles: function () {
-       
-
-        //this.draw is a public function; checkMouse is a private function. 
-        //With something that uses this, it "knows" it's inside a particle 
-        //instance. Private functions do not have a context for where they 
-        //are - don't know what "this" is. When it is called, pass it 
-        //"this": checkMouse(this);
-
-        function checkMouse(instance) {
-            var mousePos = createVector(mouseX, mouseY);
-
-            if (mousePos.dist(instance.pos) <= instance.radius) {
-//***********************
-//Update to draw highlighted particle on top - calling draw here doesn't do it b/c next particle draws afterward. 
-                //instance.drawParticles();
-                incRadius(instance);
-                instance.hue = 60;
-                isMouseOver = true;
-            } 
-            
-            else {
-                if (!mouseListener) {
-                    instance.hue = 130;
-                    isMouseOver = false;
-                    if (instance.radius - instance.defaultRadius > 4) {
-                        instance.radius -= 4;
-                    }
-                    else if (instance.radius - instance.defaultRadius < 4 && instance.radius - instance.defaultRadius > 1) {
-                        instance.radius -= 1;
-                    }
-                    else {
-                        instance.radius = instance.defaultRadius;
-                    }
-                    
-                }
-//*********************
-//replace this with a drawLabels function - want one for each kind of particle, but need to call from here. How to alter text props 
-//per particle type, while still keeping general method? (Needs to call drawCompanyLabels or drawInvestorLabels as appropriate,
-//which then call the general drawLabels function for the particle. Store font size, rotation, and color on a per-particle basis,
-//and remember differences between first and second display.)
-                else if (mouseListener) {
-                    fill(55);
-                    textSize(14);
-                    textAlign(CENTER);
-                    if (textWidth(instance.name) < 2 * maximumRadius - 10) {
-                        text(instance.name, instance.pos.x, instance.pos.y + 5);
-                    } 
-                    else {
-                        fill(185);
-                        textSize(14);
-                        textAlign(CENTER);
-                        twoLines = split(instance.name, " ");
-                        text(twoLines[0], instance.pos.x, instance.pos.y - 3);
-                        text(twoLines[1], instance.pos.x, instance.pos.y + 11);
-                    }
-                }
-
-            }
-
-        }
-
-
-        var maximumRadius = 55;
-
-        function incRadius(instance) {
-            instance.radius += 4;
-            if (instance.radius > maximumRadius) {
-                instance.radius = maximumRadius;
-                fill(255);
-                textSize(14);
-                textAlign(CENTER);
-                if (textWidth(instance.name) < 2 * maximumRadius - 10) {
-                    text(instance.name, instance.pos.x, instance.pos.y + 5);
-                } else {
-                    twoLines = split(instance.name, " ");
-                    text(twoLines[0], instance.pos.x, instance.pos.y - 3);
-                    text(twoLines[1], instance.pos.x, instance.pos.y + 11);
-                }
-
-            }
-
-        }
-
-        checkMouse(this);
 
     }
 
@@ -667,26 +576,99 @@ var Company = function (n, s) {
 
     this.drawCompanies = function () {
         if(!mouseListener){
-            fill(this.hue, 90, 100, .8);  
-        }
-        else if(mouseListener){
-            fill(this.hue, 85, 85, 1); 
-        }
-        //add company-specific draw features here
-
-
-        //call prototype function for shared features
-        this.drawParticles(this);
-    }
-
-    
-    this.drawCompanyLabels = function () {
+            //set fill color for company bubble
+            fill(this.hue, 90, 100, .8); 
             
+            //call prototype function for shared features
+            this.drawParticles(this);
+        }
+        else if(mouseListener){  //(if on the "back" screen)
+            
+            //eliminate transparency, set constant radius, and make text white
+            fill(this.hue, 85, 85, 1);
+            this.radius = 55; //(maxRadius value)  
+            this.drawParticles(this);
+            
+            //draw label
+            fill(255);
+                textSize(14);
+                textAlign(CENTER);
+                if (textWidth(this.name) < 2 * 55 - 10) {
+                    text(this.name, this.pos.x, this.pos.y + 5);
+                } 
+                else {
+                    twoLines = split(this.name, " ");
+                    text(twoLines[0], this.pos.x, this.pos.y - 3);
+                    text(twoLines[1], this.pos.x, this.pos.y + 11);
+                }
+       
+        }
+       
     }
-    
-    this.updateCompanies = function () {
 
-        //*******Need to separate Companies and Investors here!!
+    
+    this.updateCompanies = function () {    
+
+        //this.draw is a public function; checkMouse is a private function. 
+        //With something that uses this, it "knows" it's inside a particle 
+        //instance. Private functions do not have a context for where they 
+        //are - don't know what "this" is. When it is called, pass it 
+        //"this": checkMouse(this);
+
+        function checkMouse(instance) {
+            var mousePos = createVector(mouseX, mouseY);
+
+            if (mousePos.dist(instance.pos) <= instance.radius) {
+                incRadius(instance);
+                instance.hue = 60;
+                isMouseOver = true;
+            } 
+            
+            else {
+                if (!mouseListener) {
+                    instance.hue = 130;
+                    isMouseOver = false;
+                    if (instance.radius - instance.defaultRadius > 4) {
+                        instance.radius -= 4;
+                    }
+                    else if (instance.radius - instance.defaultRadius < 4 && instance.radius - instance.defaultRadius > 1) {
+                        instance.radius -= 1;
+                    }
+                    else {
+                        instance.radius = instance.defaultRadius;
+                    }
+                    
+                }
+
+            }
+
+        }       
+        
+        
+        var maximumRadius = 55;
+
+        function incRadius(instance) {
+            instance.radius += 4;
+            if (instance.radius > maximumRadius) {
+                instance.radius = maximumRadius;
+                fill(255);
+                textSize(14);
+                textAlign(CENTER);
+                if (textWidth(instance.name) < 2 * maximumRadius - 10) {
+                    text(instance.name, instance.pos.x, instance.pos.y + 5);
+                } else {
+                    twoLines = split(instance.name, " ");
+                    text(twoLines[0], instance.pos.x, instance.pos.y - 3);
+                    text(twoLines[1], instance.pos.x, instance.pos.y + 11);
+                }
+
+            }
+
+        }
+        
+        if (!mouseListener) {checkMouse(this)};
+        
+    
         //go through attractor array and update Company particles accordingly
         attractors.forEach(function (A) {
             //create a new vector att that points from the particle to the attractor. Using
@@ -739,11 +721,11 @@ Company.prototype = Particle;
 //Investors
 //***************************************************************
 
-var Investor = function (n, s, pos) {
+var Investor = function (n, s) {
     this.name = n;
     this.sum = s;
-    this.pos = pos;
-    this.radius = sqrt(this.sum) / 4000;
+    this.pos = createVector(0, 0);
+    this.radius = sqrt(this.sum) / 6000;
     this.defaultRadius = this.radius;
 
     this.drawInvestors = function () {
@@ -754,12 +736,107 @@ var Investor = function (n, s, pos) {
         this.drawParticles(this);
     }
     
-    this.drawInvestorLabels = function () {
+    this.updateInvestors = function() {
+      
+        function checkMouse(instance) {
+            var mousePos = createVector(mouseX, mouseY);
             
-    }
-    
-    
+            if(!mouseListener) {
 
+                if (mousePos.dist(instance.pos) <= instance.defaultRadius) {
+                    incRadius(instance);
+                    instance.hue = 60;
+                    isMouseOver = true;
+                    selectedInvestor = instance;
+                    
+                    connections.forEach(function(d,i){
+                        var connectIndex = i;
+                        //console.log(selectedInvestor.name);
+                        if (d.investor.name == selectedInvestor.name){
+                            
+                            var tempCompany = d.company;
+                            d.investor.pos = selectedInvestor.pos;
+                            
+                            companySystem.forEach(function(d){
+                                //console.log(tempCompany);
+                                if (d.name == tempCompany.name){
+                                    connections[i].company.pos = d.pos;
+                                    d.hue = 205;
+                                };
+                            })
+                            
+                            d.drawConnections();
+                        };
+                    })    
+                } 
+
+                else {
+                    instance.hue = 130;
+                    isMouseOver = false;
+                    if (instance.radius - instance.defaultRadius > 4) {
+                        instance.radius -= 4;
+                    }
+                    else if (instance.radius - instance.defaultRadius < 4 && instance.radius - instance.defaultRadius > 1) {
+                        instance.radius -= 1;
+                    }
+                    else {
+                        instance.radius = instance.defaultRadius;
+                    }
+                }
+
+            } 
+            
+            else if (mouseListener) {
+                instance.drawInvestorLabels();
+            }
+        
+            
+        }
+        
+        var maximumRadius = 55;
+
+        function incRadius(instance) {
+            instance.radius += 4;
+            if (instance.radius > maximumRadius) {
+                instance.radius = maximumRadius;
+                fill(255);
+                textSize(14);
+                textAlign(CENTER);
+                instance.drawInvestorLabels();
+            }
+
+        }
+        
+        checkMouse(this);
+        
+    }
+
+    this.drawInvestorLabels = function () {
+        
+        var maximumRadius = 55;
+        
+        //on "back" screen, show labels by default
+        if (mouseListener){
+
+            fill(55);
+            textSize(12);
+            textAlign(CENTER);
+            //position text above the investor circles
+            text(this.name, this.pos.x, this.pos.y - this.radius - 5);
+        }
+        
+        if (!mouseListener){
+            if (textWidth(this.name) < 2 * maximumRadius - 10) {
+                text(this.name, this.pos.x, this.pos.y + 5);
+            } 
+            else {
+                twoLines = split(this.name, " ");
+                text(twoLines[0], this.pos.x, this.pos.y - 3);
+                text(twoLines[1], this.pos.x, this.pos.y + 11);
+            }
+        }
+
+    }
 }
 
 Investor.prototype = Particle;
@@ -777,7 +854,7 @@ var Attractor = function (pos, s) {
         noStroke();
         fill(0, 100, 100);
         ellipse(pos.x, pos.y, strength, strength);
-    }
+    }   
 
     this.getStrength = function () {
         return strength;
