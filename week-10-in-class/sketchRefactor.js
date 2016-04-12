@@ -1,7 +1,6 @@
 //What happened to category colors??
 //Why do company particles return to the right size after mouseOver, and investor particles do not??
 
-
 var table;
 //input all companies as properties in the aggregated object 
 var aggregated = {};
@@ -18,6 +17,8 @@ var mouseListener = false;
 //callback function that forces processing to wait until file loads before running rest of code.
 function preload() {
     table = loadTable("data/investments_clean.csv", "csv", "header");
+    ralewayReg = loadFont('/fonts/raleway-regular.ttf');  
+    ralewayMed = loadFont('/fonts/raleway-medium.ttf');  
 }
 
 var companySystem = [];
@@ -31,6 +32,7 @@ var attractors = [];
 
 //runs once, at page load.
 function setup() {
+    
     //associates canvas with #canvas object
     var canvas = createCanvas(windowWidth, windowHeight);
     var width = windowWidth;
@@ -39,7 +41,7 @@ function setup() {
     //change refresh rate to 30 frames/second
     frameRate(30);
 
-    background(0);
+    background(245);
 
     //hue(0-360) saturation(0-100) brightness transparency
     colorMode(HSB, 360, 100, 100, 1);
@@ -267,12 +269,12 @@ function setup() {
     });
     
     var angle = 0;
-    var investorRadius = 150;
+    var investorRadius = 155;
     
     investorSystem.forEach(function(p, i){
-        angle += TWO_PI/360 * p.radius*.65;
+        angle += TWO_PI/360 * p.radius*.7;
         //var angle = i * TWO_PI / investorSystem.length;
-        investorRadius += (p.radius)*.06;
+        investorRadius += (p.radius)*.055;
         var pos = createVector((investorRadius + p.radius) * Math.sin(angle) + width / 2, (investorRadius+p.radius) * Math.cos(angle) + height / 2);
       
        
@@ -290,28 +292,33 @@ function setup() {
 
 function draw() {
 
-    background(0);
+    background(245);
+    
+    //console.log(mouseListener);
+    
     if (!mouseListener){
+        
         noStroke();
-        fill(360, 0, 70, 1);
-        textSize(22);
-        text('The Investment Spiral', 50, 65); 
+        fill(360, 0, 50, 1);
+        textSize(32);
+        textFont(ralewayReg);
+        text('The Investment Spiral', 47, 65); 
         fill(360, 0, 50, 1);
         textSize(14);
-        text('A visualization of the top 200 companies', 50, 95);
-        text('in the 2013 CrunchBase database', 50, 113);
-        text('By Erica Gunn', 50, 135);
-        text('NEU 2016', 50, 153);
-        textSize(10);
+        text('A visualization of the top 200 companies', 50, 94);
+        text('in the 2013 CrunchBase database', 50, 112);
+        text('By Erica Gunn', 50, 136);
+        text('NEU 2016', 50, 154);
+        textSize(11);
         text('data from www.crunchbase.com', 50, height - 70);
-        text('“CrunchBase 2013 Snapshot” extracted 2013-12-12',50, height - 57); 
+        text('“CrunchBase 2013 Snapshot” extracted 2013-12-12',46, height - 56); 
     }
 
     
     if (mouseListener){
-        fill(360, 0, 70, 1);
+        /*fill(360, 0, 70, 1);
         textSize(18);
-        text('Investments for ' + companyToDisplay.name, 50, 80); 
+        text('Investments for ' + companyToDisplay.name, 50, 80); */
 
     }
     
@@ -321,7 +328,7 @@ function draw() {
     //if the mouse is clicked to select a single company, draw back button 
     //and relevant investors/connections
     if (mouseListener == true) {
-
+        /*
         if (mouseX > width / 2 - 25 && mouseX < width / 2 + 25 && mouseY < height - 48 &&
         mouseY > height - 76){
             //draw highlighted back button
@@ -340,7 +347,7 @@ function draw() {
             textSize(12);
             textAlign(CENTER);
             text('back', width / 2, height - 56);
-        }
+        }*/
 
 
         //go through the connections array, and find the company selected.
@@ -383,9 +390,9 @@ function draw() {
 
                             //make a Connection object containing the company and investor particles, and the amount of this investment
                             var conn = new Connection({
-                                company: companyToDisplay
-                                , amount: connections[i].amount
-                                , investor: tempParticle
+                                company: companyToDisplay,
+                                amount: connections[i].amount,
+                                investor: tempParticle
                             });
                             connectionsToDisplay.push(conn);
 
@@ -404,16 +411,18 @@ function draw() {
         });
 
 
-        //And draw them
+        //draw investors
         connectionsToDisplay.forEach(function (e) {
             e.investor.drawInvestors();
             e.investor.updateInvestors();
         });
 
-    } else {
+    } 
+    
+    else { //if mouselistener = false
 
           //}
-       /* allConnections.forEach(function (e){
+        /*allConnections.forEach(function (e){
             e.drawConnections();
         })*/
 
@@ -572,12 +581,12 @@ var Company = function (n, s) {
 
     var acceleration = createVector(0, 0);
 
-    this.hue = 100;
+    this.hue = 310;//100;
 
     this.drawCompanies = function () {
         if(!mouseListener){
             //set fill color for company bubble
-            fill(this.hue, 90, 100, .8); 
+            fill(this.hue, 100, 85, .8); //90
             
             //call prototype function for shared features
             this.drawParticles(this);
@@ -585,8 +594,8 @@ var Company = function (n, s) {
         else if(mouseListener){  //(if on the "back" screen)
             
             //eliminate transparency, set constant radius, and make text white
-            fill(this.hue, 85, 85, 1);
-            this.radius = 55; //(maxRadius value)  
+            fill(this.hue, 90, 85, 1); //85
+            //this.radius = 55; //(maxRadius value)  
             this.drawParticles(this);
             
             //draw label
@@ -620,13 +629,13 @@ var Company = function (n, s) {
 
             if (mousePos.dist(instance.pos) <= instance.radius) {
                 incRadius(instance);
-                instance.hue = 60;
+                instance.hue = 340;//60;
                 isMouseOver = true;
             } 
             
             else {
                 if (!mouseListener) {
-                    instance.hue = 130;
+                    instance.hue = 270;//130;
                     isMouseOver = false;
                     if (instance.radius - instance.defaultRadius > 4) {
                         instance.radius -= 4;
@@ -652,6 +661,7 @@ var Company = function (n, s) {
             if (instance.radius > maximumRadius) {
                 instance.radius = maximumRadius;
                 fill(255);
+                textFont(ralewayMed);
                 textSize(14);
                 textAlign(CENTER);
                 if (textWidth(instance.name) < 2 * maximumRadius - 10) {
@@ -730,7 +740,7 @@ var Investor = function (n, s) {
 
     this.drawInvestors = function () {
         //fill(190,100,90,.7);
-        fill(169, 100, 45, .8);
+        fill(169, 100, 60, .95);
 
         //call prototype function for shared features
         this.drawParticles(this);
@@ -745,7 +755,7 @@ var Investor = function (n, s) {
 
                 if (mousePos.dist(instance.pos) <= instance.defaultRadius) {
                     incRadius(instance);
-                    instance.hue = 60;
+                    //instance.hue = 60;
                     isMouseOver = true;
                     selectedInvestor = instance;
                     
@@ -761,7 +771,7 @@ var Investor = function (n, s) {
                                 //console.log(tempCompany);
                                 if (d.name == tempCompany.name){
                                     connections[i].company.pos = d.pos;
-                                    d.hue = 205;
+                                    d.hue = 340;
                                 };
                             })
                             
@@ -800,6 +810,7 @@ var Investor = function (n, s) {
             if (instance.radius > maximumRadius) {
                 instance.radius = maximumRadius;
                 fill(255);
+                textFont(ralewayMed);
                 textSize(14);
                 textAlign(CENTER);
                 instance.drawInvestorLabels();
@@ -818,6 +829,7 @@ var Investor = function (n, s) {
         //on "back" screen, show labels by default
         if (mouseListener){
 
+            noStroke();
             fill(55);
             textSize(12);
             textAlign(CENTER);
@@ -841,6 +853,15 @@ var Investor = function (n, s) {
 
 Investor.prototype = Particle;
 
+
+//***************************************************************
+//Investments
+//***************************************************************
+
+var Investment = function(connection){
+    this.size = 5;
+    //this.frequency = this.
+}
 
 //***************************************************************
 //ATTRACTOR
@@ -871,7 +892,7 @@ var Attractor = function (pos, s) {
 //***************************************************************
 
 var Connection = function (conn) {
-    this.color = (55);
+    this.color = (68);
     this.investor = conn.investor;
     this.company = conn.company;
     this.amount = conn.amount;
