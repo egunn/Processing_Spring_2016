@@ -451,7 +451,8 @@ function draw() {
         companyToDisplay.drawCompanies();
         companyToDisplay.updateCompanies();
 
-    } else {
+    } 
+    else {
 
         //run collision minimization 3x before giving me the results
         for (var STEPS = 0; STEPS < 4; STEPS++) {
@@ -589,7 +590,7 @@ var Company = function (n, s) {
             //call prototype function for shared features
             this.drawParticles(this);
         }
-        else if(mouseListener){  //(if on the "back" screen)
+        /*else if(mouseListener){  //(if on the "back" screen)
             
             //eliminate transparency, set constant radius, and make text white
             fill(this.hue, 90, 85, 1); //85
@@ -610,7 +611,7 @@ var Company = function (n, s) {
                     text(twoLines[1], this.pos.x, this.pos.y + 11);
                 }
        
-        }
+        }*/
        
     }
 
@@ -925,7 +926,7 @@ var Connection = function (conn) {
 //***************************************************************
 //Mouse Clicked
 //***************************************************************
-
+/*
 function mouseClicked() {
 
     if (mouseListener == false) {
@@ -950,14 +951,15 @@ function mouseClicked() {
 
     }
 
-/*
+
+//
     if (mouseListener == true && mouseX > width / 2 - 25 && mouseX < width / 2 + 25 && mouseY < height - 48 &&
         mouseY > height - 76) {
 
         companyToDisplay = null;
         mouseListener = false;
         investorsToDisplay = [];
-    }*/
+    }//
 
 
-}
+}*/

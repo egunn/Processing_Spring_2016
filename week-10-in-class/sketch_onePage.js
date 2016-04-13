@@ -1,18 +1,21 @@
-//What happened to category colors??
-//Why do company particles return to the right size after mouseOver, and investor particles do not??
-
 var table;
-//input all companies as properties in the aggregated object 
-var aggregated = {};
-var aggregatedInvestors = {};
+var button;
+var selectedInvestor;
+
 var connections = [];
 var uniqueInvestors = [];
 var allConnections =[];
-var selectedInvestor;
+var companySystem = [];
+var investorSystem = [];
+var attractors = [];
+
+var aggregated = {};
+var aggregatedInvestors = {};
 var clicked = {};
+
 var companyToDisplay = null;
-var button;
 var mouseListener = false;
+
 
 //callback function that forces processing to wait until file loads before running rest of code.
 function preload() {
@@ -20,10 +23,6 @@ function preload() {
     ralewayReg = loadFont('/fonts/raleway-regular.ttf');  
     ralewayMed = loadFont('/fonts/raleway-medium.ttf');  
 }
-
-var companySystem = [];
-var investorSystem = [];
-var attractors = [];
 
 
 //***************************************************************
@@ -236,33 +235,7 @@ function setup() {
 
     //save top 200 investors
     investorSystem = uniqueInvestors.slice(0, 200); //return to 200 when done debugging
-    
-
-/*
-    //create company particles
-    for (var i = 0; i < aAggregated.length; i++) {
-        //has to be less than the length of aAggregated - increase back to 100 when done debugging
-        //console.log(aAggregated[i]);
-        var c = new Company(aAggregated[i].name, aAggregated[i].sum);
-        companySystem.push(c);
-    }  
-    */
-    /*
-    //set up unique investors array
-    for (var i = 0; i < uniqueInvestors.length; i++) {
-        //calculate x and y positions to place all unique investors in a ring around the force layout.
-       // var angle = i * TWO_PI / uniqueInvestors.length;
-       // var investorRadius = 190;
-        var pos = createVector( width / 2, height / 2);
-        //****************
-        //check scaling and sort!! find max/min, map to paricle size for investors
-        //var size = map(uniqueInvestors[i].amount, , 600,000,000,3,50);
-
-        //create investor particles + push to storage array
-        var p = new Investor(uniqueInvestors[i].name, uniqueInvestors[i].amount, pos);
-        investorSystem.push(p);
-
-    }*/
+        
     
     investorSystem.sort(function (a, b) {
         return a.radius - b.radius;
@@ -271,13 +244,12 @@ function setup() {
     var angle = 0;
     var investorRadius = 155;
     
+    
     investorSystem.forEach(function(p, i){
         angle += TWO_PI/360 * p.radius*.7;
-        //var angle = i * TWO_PI / investorSystem.length;
         investorRadius += (p.radius)*.055;
         var pos = createVector((investorRadius + p.radius) * Math.sin(angle) + width / 2, (investorRadius+p.radius) * Math.cos(angle) + height / 2);
-      
-       
+             
         p.pos = pos;
         
     });
@@ -294,71 +266,24 @@ function draw() {
 
     background(245);
     
-    //console.log(mouseListener);
-    
-    //if (!mouseListener){
-        
-        noStroke();
-        fill(360, 0, 50, 1);
-        textSize(32);
-        textFont(ralewayReg);
-        text('The Investment Spiral', 47, 65); 
-        fill(360, 0, 50, 1);
-        textSize(14);
-        text('A visualization of the top 200 companies', 50, 94);
-        text('in the 2013 CrunchBase database', 50, 112);
-        text('By Erica Gunn', 50, 136);
-        text('NEU 2016', 50, 154);
-        textSize(11);
-        text('data from www.crunchbase.com', 50, height - 70);
-        text('“CrunchBase 2013 Snapshot” extracted 2013-12-12',46, height - 56); 
-    //}
-
-    
-    //if (mouseListener){
-        /*fill(360, 0, 70, 1);
-        textSize(18);
-        text('Investments for ' + companyToDisplay.name, 50, 80); */
-
-   // }
-    
-    // console.log(investorSystem);
-
-    
-    //if the mouse is clicked to select a single company, draw back button 
-    //and relevant investors/connections
-/*    if (mouseListener == true) {
-        /*
-        if (mouseX > width / 2 - 25 && mouseX < width / 2 + 25 && mouseY < height - 48 &&
-        mouseY > height - 76){
-            //draw highlighted back button
-            fill(360, 0, 40, .9);
-            rect(width / 2 - 25, height - 72, 50, 24, 8);
-            fill(360, 0, 70, 1);
-            textSize(12);
-            textAlign(CENTER);
-            text('back', width / 2, height - 56);
-        }
-        else {
-            //draw back button
-            fill(360, 0, 40, .7);
-            rect(width / 2 - 25, height - 72, 50, 24, 8);
-            fill(360, 0, 70, 1);
-            textSize(12);
-            textAlign(CENTER);
-            text('back', width / 2, height - 56);
-        }
+    //Draw title and informational text
+    noStroke();
+    fill(360, 0, 50, 1);
+    textSize(32);
+    textFont(ralewayReg);
+    text('The Investment Spiral', 47, 65); 
+    fill(360, 0, 50, 1);
+    textSize(14);
+    text('A visualization of the top 200 companies', 50, 94);
+    text('in the 2013 CrunchBase database', 50, 112);
+    text('By Erica Gunn', 50, 136);
+    text('NEU 2016', 50, 154);
+    textSize(11);
+    text('data from www.crunchbase.com', 50, height - 70);
+    text('“CrunchBase 2013 Snapshot” extracted 2013-12-12',46, height - 56); 
 
 
-        //go through the connections array, and find the company selected.
-        //Compile all of the investors for that company, and store them to a companyInvestors array
-        //Has a company object with company name and total invested, an investor object with 
-        //investor name and x and y (in circle), and an amount for the individual investment.
-        //Does not (yet) have an x and y for the company circle!!
-        //Want to find which investors relate to the current company, and then turn their circles
-        //teal and scale relative to the size of the investment.
-
-
+/*  //Used to be activated when mouse was clicked to make a selection
         //console.log(connections);
 
         //Create a list of investors and connections to display
@@ -419,14 +344,6 @@ function draw() {
 
     } */
     
-   // else { //if mouselistener = false
-
-          //}
-        /*allConnections.forEach(function (e){
-            e.drawConnections();
-        })*/
-
-        // console.log(investorSystem);
 
         //draw all of the investors in the investors system, using the positions stored in each object
         investorSystem.forEach(function (e) {
@@ -434,8 +351,7 @@ function draw() {
             e.updateInvestors();
         })
         
-        if (selectedInvestor){
-            
+        if (selectedInvestor){     
             selectedInvestor.updateInvestors();
         }
 
@@ -443,7 +359,7 @@ function draw() {
   //  }
 
 
-    if (companyToDisplay != null) {
+    /*if (companyToDisplay != null) {
                     
         companyToDisplay.hue = 60;
         
@@ -451,7 +367,8 @@ function draw() {
         companyToDisplay.drawCompanies();
         companyToDisplay.updateCompanies();
 
-    } else {
+    } */
+   // if (!companyToDisplay) {
 
         //run collision minimization 3x before giving me the results
         for (var STEPS = 0; STEPS < 4; STEPS++) {
@@ -505,7 +422,7 @@ function draw() {
 
         }
 
-    }
+    //}
 
 }
 
@@ -542,6 +459,43 @@ var Particle = {
     },
     
     updateParticles: function () {
+
+    },
+    
+    drawLabels: function (pp) {
+        
+        var maximumRadius = 57;
+        
+        //on "back" screen, show labels by default
+       // if (mouseListener){
+
+          /*  noStroke();
+            fill(55);
+            textSize(12);
+            textAlign(CENTER);
+            //position text above the investor circles
+            text(this.name, this.pos.x, this.pos.y - this.radius - 5);*/
+       // }
+        
+        //if (!mouseListener){
+            //console.log('here');
+            if (textWidth(this.name) < 2 * maximumRadius - 10) {
+                textAlign(CENTER);
+                text(this.name, this.pos.x, this.pos.y -2);
+                textSize(11);
+                text("$" + nfc(this.sum,0), this.pos.x, this.pos.y + 14);
+            } 
+            else {
+                twoLines = split(this.name, " ");
+                text(twoLines[0], this.pos.x, this.pos.y - 13);
+                text(twoLines[1], this.pos.x, this.pos.y + 2); 
+                textSize(11);
+                textAlign(CENTER);
+                text("$" + nfc(this.sum,0), this.pos.x, this.pos.y + 18)
+            }
+
+            
+        //}
 
     }
 
@@ -588,32 +542,23 @@ var Company = function (n, s) {
             
             //call prototype function for shared features
             this.drawParticles(this);
-        }
-        else if(mouseListener){  //(if on the "back" screen)
             
+        }
+        else if(mouseListener){  //(if a company or investor is clicked on)
+          
+//**********if the company isn't the selected company, set its transparency to .1
+//**********if the company is the selected one, increase its radius and show its label
+            
+            /*
             //eliminate transparency, set constant radius, and make text white
             fill(this.hue, 90, 85, 1); //85
             //this.radius = 55; //(maxRadius value)  
             this.drawParticles(this);
-            
-            //draw label
-            fill(255);
-                textSize(14);
-                textAlign(CENTER);
-                if (textWidth(this.name) < 2 * 55 - 10) {
-                    text(this.name, this.pos.x, this.pos.y + 5);
-
-                } 
-                else {
-                    twoLines = split(this.name, " ");
-                    text(twoLines[0], this.pos.x, this.pos.y - 3);
-                    text(twoLines[1], this.pos.x, this.pos.y + 11);
-                }
-       
+            */
         }
        
     }
-
+    
     
     this.updateCompanies = function () {    
 
@@ -633,7 +578,7 @@ var Company = function (n, s) {
             } 
             
             else {
-                //if (!mouseListener) {
+                //if (!mouseListener) {  //if nothing is selected
                     instance.hue = 270;//130;
                     isMouseOver = false;
                     if (instance.radius - instance.defaultRadius > 4) {
@@ -659,7 +604,8 @@ var Company = function (n, s) {
             instance.radius += 4;
             if (instance.radius > maximumRadius) {
                 instance.radius = maximumRadius;
-                fill(255);
+                instance.drawLabels(instance);
+                /*fill(255);
                 textFont(ralewayMed);
                 textSize(14);
                 textAlign(CENTER);
@@ -677,7 +623,7 @@ var Company = function (n, s) {
                     textSize(11);
                     textAlign(CENTER);
                     text("$" + nfc(instance.sum,0), instance.pos.x, instance.pos.y + 17);
-                }
+                }*/
 
             }
 
@@ -713,7 +659,7 @@ var Company = function (n, s) {
         }, this);
         
         
-        this.updateParticles();
+        //this.updateParticles();
 
         //update the velocity and position vectors  
         this.vel.add(this.accel);
@@ -783,6 +729,9 @@ var Investor = function (n, s) {
                             })
                             
                             d.drawConnections();
+                            //d.company.drawCompanies();
+                            //d.investor.drawInvestors();
+//************************ implement, then call drawLabels here!
                         };
                     })    
                 } 
@@ -802,10 +751,6 @@ var Investor = function (n, s) {
                 }
 
             //} 
-            /*
-            else if (mouseListener) {
-                instance.drawInvestorLabels();
-            }*/
         
             
         }
@@ -820,7 +765,7 @@ var Investor = function (n, s) {
                 textFont(ralewayMed);
                 textSize(14);
                 textAlign(CENTER);
-                instance.drawInvestorLabels();
+                instance.drawLabels(instance);
             }
 
         }
@@ -829,42 +774,7 @@ var Investor = function (n, s) {
         
     }
 
-    this.drawInvestorLabels = function () {
-        
-        var maximumRadius = 55;
-        
-        //on "back" screen, show labels by default
-       // if (mouseListener){
 
-          /*  noStroke();
-            fill(55);
-            textSize(12);
-            textAlign(CENTER);
-            //position text above the investor circles
-            text(this.name, this.pos.x, this.pos.y - this.radius - 5);*/
-       // }
-        
-        //if (!mouseListener){
-            //console.log('here');
-            if (textWidth(this.name) < 2 * maximumRadius - 10) {
-                text(this.name, this.pos.x, this.pos.y -2);
-                textSize(11);
-                textAlign(CENTER);
-                text("$" + nfc(this.sum,0), this.pos.x, this.pos.y + 14);
-            } 
-            else {
-                twoLines = split(this.name, " ");
-                text(twoLines[0], this.pos.x, this.pos.y - 13);
-                text(twoLines[1], this.pos.x, this.pos.y + 2); 
-                textSize(11);
-                textAlign(CENTER);
-                text("$" + nfc(this.sum,0), this.pos.x, this.pos.y + 18)
-            }
-
-            
-        //}
-
-    }
 }
 
 Investor.prototype = Particle;
@@ -925,7 +835,7 @@ var Connection = function (conn) {
 //***************************************************************
 //Mouse Clicked
 //***************************************************************
-
+/*
 function mouseClicked() {
 
     if (mouseListener == false) {
@@ -950,14 +860,15 @@ function mouseClicked() {
 
     }
 
-/*
+
+//
     if (mouseListener == true && mouseX > width / 2 - 25 && mouseX < width / 2 + 25 && mouseY < height - 48 &&
         mouseY > height - 76) {
 
         companyToDisplay = null;
         mouseListener = false;
         investorsToDisplay = [];
-    }*/
+    }//
 
 
-}
+}*/
