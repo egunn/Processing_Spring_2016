@@ -59,7 +59,7 @@ var Connection = function (conn) {
 
     this.drawConnections = function () {    
         stroke(this.color);
-        strokeWeight(.5);
+        strokeWeight(.25);
         line(this.investor.pos.x, this.investor.pos.y, this.company.pos.x, this.company.pos.y);
     }
 

@@ -9,6 +9,7 @@ var Company = function (n, s) {
     this.sum = s;
     this.radius = sqrt(s) / 4000;
     this.defaultRadius = this.radius;
+    this.connected = false;
 
     var tempAng = random(TWO_PI);
     this.pos = createVector(cos(tempAng), sin(tempAng));
@@ -19,30 +20,16 @@ var Company = function (n, s) {
 
     var acceleration = createVector(0, 0);
 
-    this.hue = 310;//100;
+    this.hue = 285;//purple
+    this.alpha = .8;
 
     this.drawCompanies = function () {
-        if(!mouseListener){
-            //set fill color for company bubble
-            fill(this.hue, 100, 85, .8); //90
+            //update fill color for company bubble
+            fill(this.hue, 100, 75, this.alpha); 
             
-            //call prototype function for shared features
+            //call prototype function to draw ellipse
             this.drawParticles(this);
-            
-        }
-        else if(mouseListener){  //(if a company or investor is clicked on)
-          
-//**********if the company isn't the selected company, set its transparency to .1
-//**********if the company is the selected one, increase its radius and show its label
-            
-            /*
-            //eliminate transparency, set constant radius, and make text white
-            fill(this.hue, 90, 85, 1); //85
-            //this.radius = 55; //(maxRadius value)  
-            this.drawParticles(this);
-            */
-        }
-       
+                   
     }
     
     
@@ -55,11 +42,16 @@ var Company = function (n, s) {
             //if the mouse is over the company
             if (mousePos.dist(instance.pos) <= instance.radius) {
                 instance.incRadius(instance);
-                instance.hue = 340;//60;
+                instance.hue = 325;//60;
+                instance.alpha = .9;
                 isMouseOver = true;
                 
                 //save the company in a temp variable
-                var selectedCompany = instance;
+                selectedCompany = instance;
+                
+                investorSystem.forEach(function(g){
+                    g.connected = false;
+                })
                     
                     //go through the topConnections array
                     topConnections.forEach(function(d,i){
@@ -68,38 +60,26 @@ var Company = function (n, s) {
                         
                         //and look to see if the selected company matches the company in the topConnections array
                         if (d.company.name == selectedCompany.name){
-                            
-                            var tempInvestor = d.investor;
-                            
-                            //set the connection company pos to that of the selected company
-                            d.company.pos = selectedCompany.pos;
-                            
-                            /*
-                            //go through the investorSystem array
-                            investorSystem.forEach(function(d){
-                                
-                                //check whether the investor is there
-                                if (d.name == tempInvestor.name){
-                                    d.hue = 240;
-                                };
-                                
-                            })*/
-                            
-                            var foundInvest = investorSystem.find(function (investor){
-                            topConnections[connectIndex].investor.pos = tempInvestor.pos;    
-                             return investor.name == tempInvestor.name;
-                                
-                            });
-                            
-                            
-                            if (foundInvest) {
-                                d.drawConnections();}
-                            //d.company.updateCompanies();
-                            //d.investor.updateInvestors();
-                            //d.investor.drawLabels();
+                            //if (d.investor) {
+                                var tempInvestor = d.investor;
 
+                                //set the connection company pos to that of the selected company
+                                d.company.pos = selectedCompany.pos;
+
+                                investorSystem.forEach(function(f){
+                                    if (f.name == tempInvestor.name){
+                                        topConnections[connectIndex].investor.pos = f.pos;
+                                        f.connected  = true;
+                                    }
+                                    //else{ f.connected = false;}
+                                })
+
+                                    d.drawConnections();
+                                    //d.investor.drawInvestors();
+                            //}
                         }
-                    });                  
+                        
+                        });           
                 
                 
             }          
@@ -110,14 +90,43 @@ var Company = function (n, s) {
  
             
             
-            
+           
             
             else {
-                //if (!mouseListener) {  //if nothing is selected
-                    instance.hue = 270;//130;
+                //if an investor is selected, gray out all of the companies except those connected to the investor
+                    if(selectedInvestor){
+                        //console.log(instance.connected);
+                        if (instance.connected == false){
+                            if(instance.alpha - .3 > 0) {
+                                instance.hue = 285;
+                                instance.alpha -= .2;
+                            }
+                            else { 
+                                instance.hue = 285;
+                                instance.alpha = .3;
+                            }
+                        }         
+                        else {instance.hue = 285;
+                            instance.alpha = .8;}
+                    }
+                    else {
+                        if ( instance.alpha < .8){
+                            instance.hue = 285;
+                            instance.alpha += .1;
+                        }
+                        else{
+                            instance.hue = 285;
+                            instance.alpha = .8;
+                        }
+                        
+                    }
+                
+                
                     isMouseOver = false;
+                
                     if (instance.radius - instance.defaultRadius > 4) {
                         instance.radius -= 4;
+                        
                     }
                     else if (instance.radius - instance.defaultRadius < 4 && instance.radius - instance.defaultRadius > 1) {
                         instance.radius -= 1;
@@ -140,7 +149,7 @@ var Company = function (n, s) {
 
         
         //if (!mouseListener) {checkMouse(this)};
-        checkMouse(this);
+        //checkMouse(this);
     
         //go through attractor array and update Company particles accordingly
         attractors.forEach(function (A) {
@@ -169,7 +178,7 @@ var Company = function (n, s) {
         }, this);
         
         
-        this.updateParticles();
+        //this.updateParticles();
 
         //update the velocity and position vectors  
         this.vel.add(this.accel);

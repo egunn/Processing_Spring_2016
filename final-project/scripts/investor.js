@@ -5,10 +5,12 @@
 var Investor = function (n, s) {
     this.name = n;
     this.sum = s;
-    this.pos = createVector(0, 0);
+    this.pos = createVector(50, 50);
     this.radius = sqrt(this.sum) / 6000;
     this.defaultRadius = this.radius;
-
+    this.alpha = .8;
+    this.hue = 169;
+    this.connected = false;
     
     
     
@@ -23,7 +25,9 @@ var Investor = function (n, s) {
     
         this.drawInvestors = function () {
         //fill(190,100,90,.7);
-        fill(169, 100, 60, .95);
+        
+        fill(this.hue, 100, 55, this.alpha);
+        
 
         //call prototype function for shared features
         this.drawParticles(this);
@@ -58,28 +62,35 @@ var Investor = function (n, s) {
                 if (mousePos.dist(instance.pos) <= instance.defaultRadius) {
                     instance.incRadius(instance);
                     //instance.hue = 60;
+                    instance.alpha = .9;
                     isMouseOver = true;
                     
                     selectedInvestor = instance;
                     
+                    companySystem.forEach(function(g){
+                        g.connected = false;
+                    })
+                    
                     topConnections.forEach(function(d,i){
 
-                        
+                        var invIndex = i;
                         
                         if (d.investor.name == selectedInvestor.name){
                             
                             var tempCompany = d.company;
                             d.investor.pos = selectedInvestor.pos;
                             
-                            companySystem.forEach(function(d){
+                            companySystem.forEach(function(f){
                                 //console.log(tempCompany);
-                                if (d.name == tempCompany.name){
-                                    topConnections[i].company.pos = d.pos;
-                                    d.hue = 340;
-                                };
+                                if (f.name == tempCompany.name){
+                                    topConnections[invIndex].company.pos = f.pos;
+                                    f.connected = true;
+                                }
+                                //else { f.connected = false;}
                             })
                             
                             d.drawConnections();
+                            //d.company.drawCompanies();
                             //d.company.drawCompanies();
                             //d.investor.drawInvestors();
                             //d.investor.drawLabels();
@@ -94,11 +105,33 @@ var Investor = function (n, s) {
             
             
              else {
-                    instance.hue = 130;
+                if(selectedCompany){
+                    if (instance.connected == false){
+                        //instance.hue = 285;
+                        if (instance.alpha - .1 > 0){
+                            instance.alpha -= .2;
+                        }
+                        else {
+                            instance.alpha = .1;
+                        }
+                    }         
+                    else {//instance.hue = 285;
+                        instance.alpha = .9;}
+                }
+                else { 
+                    if (instance.alpha < .9){
+                        instance.alpha += .1;
+                    }
+                    else {
+                        instance.alpha = .9;
+                    }
+                }
+                 
+                 
                     isMouseOver = false;
                     if (instance.radius - instance.defaultRadius > 4) {
                         instance.radius -= 4;
-                        selectedInvestor = null;
+                       
                     }
                     else if (instance.radius - instance.defaultRadius < 4 && instance.radius - instance.defaultRadius > 1) {
                         instance.radius -= 1;

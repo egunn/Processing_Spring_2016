@@ -86,23 +86,6 @@ function draw() {
     } */
     
 
-        //draw all of the investors in the investors system, using the positions stored in each object
-        investorSystem.forEach(function (e) {
-            e.drawInvestors();
-            e.updateInvestors();
-        })
-        
-        if (selectedInvestor){     
-            selectedInvestor.updateInvestors();
-            selectedInvestor.drawInvestors();
-            selectedInvestor.drawLabels();
-        }
-    
-        if (selectedCompany){     
-            selectedCompany.updateCompanies();
-            selectedCompany.drawCompanies();
-            selectedCompany.drawLabels();
-        }
 
 
   //  }
@@ -160,17 +143,38 @@ function draw() {
                 }
             }
         }
-
+        
+        selectedCompany = null;
 
         for (var i = companySystem.length - 1; i >= 0; i--) {
             //grab one particle from the system
             var p = companySystem[i];
-
+            
             p.updateCompanies();
             p.drawCompanies();
             
 
         }
+    
+        selectedInvestor = null;
+           
+        //draw all of the investors in the investors system, using the positions stored in each object
+        investorSystem.forEach(function (e) {
+            e.updateInvestors();
+            e.drawInvestors();
+        })
+        
+        if (selectedInvestor){      
+            //selectedInvestor.updateInvestors();
+            selectedInvestor.drawInvestors();
+            selectedInvestor.drawLabels();
+        }
+    
+        if (selectedCompany){     
+            //selectedCompany.updateCompanies();
+            selectedCompany.drawCompanies();
+            selectedCompany.drawLabels();
+        } 
 
     //}
 
