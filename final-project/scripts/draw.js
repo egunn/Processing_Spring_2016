@@ -15,15 +15,76 @@ function draw() {
     text('The Investment Spiral', 47, 65); 
     fill(360, 0, 50, 1);
     textSize(14);
-    text('A visualization of the top 200 companies', 50, 94);
+    text('A visualization of the top 50 companies', 50, 94);
     text('in the 2013 CrunchBase database', 50, 112);
     text('By Erica Gunn', 50, 136);
     text('NEU 2016', 50, 154);
     textSize(11);
     text('data from www.crunchbase.com', 50, height - 70);
     text('“CrunchBase 2013 Snapshot” extracted 2013-12-12',46, height - 56); 
+    
+    if (isMouseOver == false) {
+
+        //from https://processing.org/tutorials/text/
+        push();
+        var message = "Companies";
+        var arclength = 0;
+        var message2 = "Investors";
+        var arclength2 = 0;
+        noFill();
+        textAlign(CENTER);
+        fill(235);
+        noStroke();
+        var r = 130;
+        var r2 = 240;
+        translate(width/2,height/2);
+        ellipse(0, 0, 2*r,2*r);
+        ellipse(0, 0, 2*r2,2*r2);
+
+        for (var i = 0; i<message.length; i++){
+            var currentChar = message.charAt(i)
+            w = textWidth(currentChar);
+            arclength += w/2 + 1.3;
+            var theta = 31*PI/24 + (arclength/r);
+
+            push();
+            //console.log(r);
+            translate(r*cos(theta), r*sin(theta));
+            rotate(theta+PI/2); 
+            textSize(14);
+            textFont(ralewayReg);
+            fill(90);
+            text(currentChar,0,0);
+            pop();
+            arclength += w/2 + 1.3;
+
+        }
+
+        for (var i = 0; i<message2.length; i++){
+            var currentChar2 = message2.charAt(i)
+            w2 = textWidth(currentChar2);
+            arclength2 += w2/2 + 1.2;
+            var theta2 = 32*PI/24 + (arclength2/r2);
+
+            push();
+            //console.log(r);
+            translate(r2*cos(theta2), r2*sin(theta2));
+            rotate(theta2+PI/2); 
+            textSize(14);
+            textFont(ralewayReg);
+            fill(90);
+            text(currentChar2,0,0);
+            pop();
+            arclength2 += w2/2 + 1.2;
+
+        }
 
 
+        pop(); 
+    }
+    
+
+    
 /*  //Used to be activated when mouse was clicked to make a selection
         //console.log(connections);
 
@@ -145,6 +206,7 @@ function draw() {
         }
         
         selectedCompany = null;
+        isMouseOver = false;
 
         for (var i = companySystem.length - 1; i >= 0; i--) {
             //grab one particle from the system
@@ -157,6 +219,7 @@ function draw() {
         }
     
         selectedInvestor = null;
+        
            
         //draw all of the investors in the investors system, using the positions stored in each object
         investorSystem.forEach(function (e) {

@@ -15,6 +15,7 @@ var clicked = {};
 
 var companyToDisplay = null;
 var mouseListener = false;
+var isMouseOver = false;
 
 
 //callback function that forces processing to wait until file loads before running rest of code.

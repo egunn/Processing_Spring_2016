@@ -70,6 +70,57 @@ var Company = function (n, s) {
                                     if (f.name == tempInvestor.name){
                                         topConnections[connectIndex].investor.pos = f.pos;
                                         f.connected  = true;
+                                        
+                                        
+                                        //draw labels with company name and dollar amount
+                                        push();
+                                                   
+                                            translate(f.pos.x,f.pos.y);
+                                        //push();
+                                            
+                                            collisionLabels(f, selectedCompany);
+                                            
+                                        //pop();
+                                        pop();
+                                        
+                                        function collisionLabels(investor, centerCompany) {
+                                            this.pos = createVector(investor.pos.x, investor.pos.y).sub(createVector(centerCompany.pos.x,    
+                                                centerCompany.pos.y));
+                                            
+                                            
+                                            this.theta = atan2(investor.pos.y - centerCompany.pos.y, investor.pos.x - centerCompany.pos.x);
+                                                                                                    
+                                            //lower left quadrant
+                                            if(investor.pos.x <= width/2 && investor.pos.y >= height/2){
+                                                textAlign(RIGHT);
+                                                translate((investor.defaultRadius+10)*cos(this.theta), (investor.defaultRadius+10)*sin(this.theta));// + .15));
+                                            }
+                                            //upper left quadrant
+                                            else if(investor.pos.x < width/2 && investor.pos.y < height/2){
+                                                textAlign(RIGHT);
+                                                translate((investor.defaultRadius+5)*cos(this.theta), (investor.defaultRadius+5)*sin(this.theta));// + .15));
+                                            }
+                                            //lower right quadrant
+                                            else if(investor.pos.x >= width/2 && investor.pos.y >= height/2){
+                                                textAlign(LEFT);
+                                                translate((investor.defaultRadius+10)*cos(this.theta), (investor.defaultRadius+10)*sin(this.theta));
+                                            }
+                                            //upper right quadrant
+                                            else if(investor.pos.x > width/2 && investor.pos.y < height/2){
+                                                textAlign(LEFT);
+                                                translate((investor.defaultRadius+5)*cos(this.theta), (investor.defaultRadius+5)*sin(this.theta));
+                                            }
+                                            //rotate(theta);
+                                            //}
+                                            
+                                            noStroke();
+                                            textSize(11);
+                                            textFont(ralewayReg);
+                                            fill(70);
+
+                                            text(investor.name, 0,0);//console.log(f.pos.x);
+                                            
+                                        }
                                     }
                                     //else{ f.connected = false;}
                                 })
@@ -93,6 +144,7 @@ var Company = function (n, s) {
            
             
             else {
+                
                 //if an investor is selected, gray out all of the companies except those connected to the investor
                     if(selectedInvestor){
                         //console.log(instance.connected);
@@ -110,6 +162,9 @@ var Company = function (n, s) {
                             instance.alpha = .8;}
                     }
                     else {
+                        
+                        //isMouseOver = false;
+                        
                         if ( instance.alpha < .8){
                             instance.hue = 285;
                             instance.alpha += .1;
@@ -122,7 +177,7 @@ var Company = function (n, s) {
                     }
                 
                 
-                    isMouseOver = false;
+                    
                 
                     if (instance.radius - instance.defaultRadius > 4) {
                         instance.radius -= 4;

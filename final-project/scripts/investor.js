@@ -104,34 +104,38 @@ var Investor = function (n, s) {
             
             
             
-             else {
-                if(selectedCompany){
-                    if (instance.connected == false){
-                        //instance.hue = 285;
-                        if (instance.alpha - .1 > 0){
-                            instance.alpha -= .2;
+                 else {
+
+                    
+                    if(selectedCompany){
+                        if (instance.connected == false){
+                            //instance.hue = 285;
+                            if (instance.alpha - .1 > 0){
+                                instance.alpha -= .2;
+                            }
+                            else {
+                                instance.alpha = .1;
+                            }
+                        }         
+                        else {//instance.hue = 285;
+                            instance.alpha = .9;}
+                    }
+                    else { 
+                        
+                        //isMouseOver = false;
+                        
+                        if (instance.alpha < .9){
+                            instance.alpha += .1;
                         }
                         else {
-                            instance.alpha = .1;
+                            instance.alpha = .9;
                         }
-                    }         
-                    else {//instance.hue = 285;
-                        instance.alpha = .9;}
-                }
-                else { 
-                    if (instance.alpha < .9){
-                        instance.alpha += .1;
                     }
-                    else {
-                        instance.alpha = .9;
-                    }
-                }
-                 
-                 
-                    isMouseOver = false;
+
+
                     if (instance.radius - instance.defaultRadius > 4) {
                         instance.radius -= 4;
-                       
+
                     }
                     else if (instance.radius - instance.defaultRadius < 4 && instance.radius - instance.defaultRadius > 1) {
                         instance.radius -= 1;
@@ -139,7 +143,7 @@ var Investor = function (n, s) {
                     else {
                         instance.radius = instance.defaultRadius;
                     }
-                    
+
                 }
 
             //} 
@@ -152,8 +156,6 @@ var Investor = function (n, s) {
         
         
         
-        
-
         
         checkMouse(this);
         
