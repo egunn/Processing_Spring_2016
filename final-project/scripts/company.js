@@ -53,6 +53,8 @@ var Company = function (n, s) {
                     g.connected = false;
                 })
                     
+                selectedLabels = [];
+                
                     //go through the topConnections array
                     topConnections.forEach(function(d,i){
                         
@@ -65,67 +67,38 @@ var Company = function (n, s) {
 
                                 //set the connection company pos to that of the selected company
                                 d.company.pos = selectedCompany.pos;
-
+                            
                                 investorSystem.forEach(function(f){
+                                    
+//**********************************Adding this caused some investors not to have values for some reason - lines to upper right corner.                                    
+                                    //check to see if this is a duplicate (same investor invests multiple times)
+                                    var checkInv = selectedLabels.find(function(m){
+                                        if (m.investor.name == tempInvestor.name){
+                                            return true;
+                                        }  
+                                    })
+                                    
                                     if (f.name == tempInvestor.name){
                                         topConnections[connectIndex].investor.pos = f.pos;
                                         f.connected  = true;
-                                        
-                                        
-                                        //draw labels with company name and dollar amount
-                                        push();
-                                                   
-                                            translate(f.pos.x,f.pos.y);
-                                        //push();
+                                                                                
+                                        //create labels and store                                                          
+                                        var label = new CollisionLabels(f, selectedCompany);
                                             
-                                            collisionLabels(f, selectedCompany);
-                                            
-                                        //pop();
-                                        pop();
-                                        
-                                        function collisionLabels(investor, centerCompany) {
-                                            this.pos = createVector(investor.pos.x, investor.pos.y).sub(createVector(centerCompany.pos.x,    
-                                                centerCompany.pos.y));
-                                            
-                                            
-                                            this.theta = atan2(investor.pos.y - centerCompany.pos.y, investor.pos.x - centerCompany.pos.x);
-                                                                                                    
-                                            //lower left quadrant
-                                            if(investor.pos.x <= width/2 && investor.pos.y >= height/2){
-                                                textAlign(RIGHT);
-                                                translate((investor.defaultRadius+10)*cos(this.theta), (investor.defaultRadius+10)*sin(this.theta));// + .15));
-                                            }
-                                            //upper left quadrant
-                                            else if(investor.pos.x < width/2 && investor.pos.y < height/2){
-                                                textAlign(RIGHT);
-                                                translate((investor.defaultRadius+5)*cos(this.theta), (investor.defaultRadius+5)*sin(this.theta));// + .15));
-                                            }
-                                            //lower right quadrant
-                                            else if(investor.pos.x >= width/2 && investor.pos.y >= height/2){
-                                                textAlign(LEFT);
-                                                translate((investor.defaultRadius+10)*cos(this.theta), (investor.defaultRadius+10)*sin(this.theta));
-                                            }
-                                            //upper right quadrant
-                                            else if(investor.pos.x > width/2 && investor.pos.y < height/2){
-                                                textAlign(LEFT);
-                                                translate((investor.defaultRadius+5)*cos(this.theta), (investor.defaultRadius+5)*sin(this.theta));
-                                            }
-                                            //rotate(theta);
-                                            //}
-                                            
-                                            noStroke();
-                                            textSize(11);
-                                            textFont(ralewayReg);
-                                            fill(70);
-
-                                            text(investor.name, 0,0);//console.log(f.pos.x);
-                                            
+                                        if (!checkInv){
+                                            selectedLabels.push(label);   
                                         }
+                                        
                                     }
                                     //else{ f.connected = false;}
+                                                                        
+                                    checkInv = false;   
                                 })
-
+                                
+                                    //draw labels and connections
+                                    //selectedLabels.forEach(function(l) {l.draw(l);});
                                     d.drawConnections();
+                                    
                                     //d.investor.drawInvestors();
                             //}
                         }

@@ -8,6 +8,7 @@ var allConnections =[];
 var companySystem = [];
 var investorSystem = [];
 var attractors = [];
+var selectedLabels = []; //holds text labels for collision function
 
 var aggregated = {};
 var aggregatedInvestors = {};

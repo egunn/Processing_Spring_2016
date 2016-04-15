@@ -41,6 +41,7 @@ function draw() {
         ellipse(0, 0, 2*r,2*r);
         ellipse(0, 0, 2*r2,2*r2);
 
+        //draw arc text labels
         for (var i = 0; i<message.length; i++){
             var currentChar = message.charAt(i)
             w = textWidth(currentChar);
@@ -204,7 +205,8 @@ function draw() {
                 }
             }
         }
-        
+    
+    
         selectedCompany = null;
         isMouseOver = false;
 
@@ -239,6 +241,13 @@ function draw() {
             selectedCompany.drawLabels();
         } 
 
+        selectedLabels.forEach(function(d){ 
+            d.update();
+            d.draw();
+        })
+          
+        selectedLabels = [];
+    
     //}
 
 }
